@@ -78,7 +78,7 @@
         .sub-title { font-size: 10px; color: var(--text-sub); font-weight: bold; letter-spacing: 1px; margin-top: 4px; }
         .version-badge { background: var(--accent); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 9px; margin-left: 6px; font-weight: 900;}
         
-        .theme-toggle-logo { height: 28px; width: 28px; object-fit: contain; cursor: pointer; transition: transform 0.2s ease; background-color: var(--primary); border-radius: 50%; padding: 4px;}
+        .theme-toggle-logo { height: 28px; width: 28px; object-fit: contain; cursor: pointer; transition: transform 0.2s ease; background-color: transparent; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center;}
         .theme-toggle-logo:active { transform: scale(0.85); }
         
         .container { padding: 15px; max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 100px;}
@@ -91,8 +91,17 @@
         input, textarea, select { width: 100%; padding: 14px 12px; border: 1.5px solid var(--border-line); border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--bg-input); color: var(--text-main); font-family: inherit;}
         input:focus, textarea:focus, select:focus { border-color: var(--border-focus); outline: none; box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15); background: var(--bg-card);}
         
+        /* CLASS UNTUK MENGUNCI INPUT SECARA VISUAL & FUNGSI KLIK */
+        input.readonly-locked, select.readonly-locked { 
+            background: var(--bg-readonly) !important; 
+            color: var(--text-sub) !important; 
+            cursor: not-allowed; 
+            border-style: dashed; 
+            pointer-events: none; 
+        }
+        
         input[readonly].clickable { cursor: pointer; background: var(--bg-input); border: 1.5px solid var(--primary); color: var(--primary); text-align: center; font-size: 15px; font-weight: 800;}
-        input[readonly]:not(.clickable) { background: var(--bg-readonly); font-weight: bold; color: var(--danger); cursor: not-allowed; border-style: dashed; }
+        input[readonly]:not(.clickable):not(.readonly-locked) { background: var(--bg-readonly); font-weight: bold; color: var(--danger); cursor: not-allowed; border-style: dashed; }
         
         .grid-full { display: grid; grid-template-columns: 1fr; gap: 14px; }
         .grid-half { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -159,10 +168,7 @@
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; flex-direction: column; gap: 12px;
         }
-        /* PERBAIKAN ANIMASI MENU DI SINI */
-        .sheet-overlay.show .bottom-sheet {
-            transform: translateY(0);
-        }
+        .sheet-overlay.show .bottom-sheet { transform: translateY(0); }
         
         .sheet-handle {
             width: 40px; height: 5px; background: var(--border-line);
@@ -221,7 +227,7 @@
             <div class="main-title">QC WASHING DASHBOARD</div>
             <div class="sub-title">QUALITY ENGINEERING USGU DRESS 1 <span class="version-badge" id="verBadge">v1.1</span></div>
         </div>
-        <div class="theme-toggle-logo" id="themeBtn" onclick="toggleTheme()" style="background: transparent; padding: 0; display: flex; align-items: center; justify-content: center;">
+        <div class="theme-toggle-logo" id="themeBtn" onclick="toggleTheme()">
             <img src="logolight.png" alt="Toggle Theme" style="width: 32px; height: 32px; object-fit: contain;">
         </div>
     </div>
@@ -260,7 +266,7 @@
             </div>
             <div class="input-group">
                 <label class="req">ORDER / BUYER:</label>
-                <select id="buyer" onchange="updateDropdowns('buyer'); saveData()">
+                <select id="buyer" onchange="updateDropdowns('buyer'); fetchStaticData(); saveData()">
                     <option value="" disabled selected>-- Pilih Buyer --</option>
                 </select>
             </div>
@@ -269,13 +275,13 @@
         <div class="grid-half" style="margin-top: 14px;">
             <div class="input-group">
                 <label class="req">STYLE:</label>
-                <select id="style" onchange="updateDropdowns('style'); saveData()">
+                <select id="style" onchange="updateDropdowns('style'); fetchStaticData(); saveData()">
                     <option value="" disabled selected>-- Pilih Style --</option>
                 </select>
             </div>
             <div class="input-group">
                 <label class="req">COLOR:</label>
-                <select id="color" onchange="saveData()">
+                <select id="color" onchange="fetchStaticData(); saveData()">
                     <option value="" disabled selected>-- Pilih Color --</option>
                 </select>
             </div>
@@ -287,8 +293,8 @@
                 <input type="number" id="qty_order" oninput="formatAntiMinus(this); saveData()" placeholder="Jumlah Order">
             </div>
             <div class="input-group">
-                <label>QTY DELIVER:</label>
-                <input type="number" id="deliver" oninput="formatAntiMinus(this); saveData()" placeholder="Qty Deliver">
+                <label>DELIVER:</label>
+                <input type="date" id="deliver" onchange="saveData()">
             </div>
         </div>
 
@@ -804,6 +810,69 @@ LL.Bean,522846,Indigo Ink
             colorSelect.innerHTML = colorOptions;
         }
     }
+
+    // FITUR CEK DATA PATEN (SUMMARY) DARI SERVER
+    function fetchStaticData() {
+        let buyer = document.getElementById('buyer').value;
+        let style = document.getElementById('style').value;
+        let color = document.getElementById('color').value;
+
+        let fields = ['qty_order', 'line_name', 'deliver', 'from_sewing', 'send_washing', 'received_washing'];
+
+        if (!buyer || !style || !color) {
+            fields.forEach(id => {
+                let el = document.getElementById(id);
+                el.classList.remove('readonly-locked');
+                if(id !== 'line_name') el.removeAttribute('readonly');
+            });
+            document.getElementById('line_name').classList.add('clickable');
+            document.getElementById('line_name').setAttribute('readonly', 'true');
+            return;
+        }
+
+        document.getElementById('loading').style.display = 'flex';
+        document.getElementById('loading-text').innerText = "MENGECEK DATA...";
+
+        const payload = {
+            action: "check_static",
+            buyer: buyer,
+            style: style,
+            color: color
+        };
+
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            if (data.result === "success") {
+                document.getElementById('qty_order').value = data.qty_order;
+                document.getElementById('line_name').value = data.line_name;
+                document.getElementById('deliver').value = data.deliver;
+                document.getElementById('from_sewing').value = data.from_sewing;
+                document.getElementById('send_washing').value = data.send_washing;
+                document.getElementById('received_washing').value = data.received_washing;
+
+                fields.forEach(id => {
+                    let el = document.getElementById(id);
+                    el.classList.add('readonly-locked');
+                    el.setAttribute('readonly', 'true');
+                    el.classList.remove('clickable'); 
+                });
+            } else {
+                fields.forEach(id => {
+                    let el = document.getElementById(id);
+                    el.classList.remove('readonly-locked');
+                    if(id !== 'line_name') el.removeAttribute('readonly');
+                });
+                document.getElementById('line_name').classList.add('clickable');
+                document.getElementById('line_name').setAttribute('readonly', 'true');
+            }
+            saveData();
+        })
+        .catch(err => {
+            document.getElementById('loading').style.display = 'none';
+        });
+    }
     
     function toggleTheme() { 
         document.body.classList.toggle('dark-mode'); 
@@ -835,6 +904,7 @@ LL.Bean,522846,Indigo Ink
     let selectedLines = [];
 
     function openLineModal() {
+        if(document.getElementById('line_name').classList.contains('readonly-locked')) return;
         let cur = document.getElementById('line_name').value;
         selectedLines = cur ? cur.split(',').map(x => x.trim()).filter(x => x) : [];
         selectedNum = ""; 
@@ -1099,6 +1169,12 @@ LL.Bean,522846,Indigo Ink
         if(localStorage.getItem('darkMode_wash') === 'true') { 
             document.body.classList.add('dark-mode'); 
         } 
+        
+        // Panggil cek static setelah form termuat
+        if(document.getElementById('buyer').value && document.getElementById('style').value && document.getElementById('color').value) {
+            fetchStaticData();
+        }
+
         checkOfflineBadge();
     }
     
@@ -1111,8 +1187,15 @@ LL.Bean,522846,Indigo Ink
                 activeDefects = {}; renderDefectList();
                 ['line_name','buyer','style','color','shift_start','shift_end','qty_order','deliver','qty_send','qty_receive','qty_rar','from_sewing','send_washing','received_washing','qty_good', 'nama_qc'].forEach(id => { 
                     let el = document.getElementById(id);
-                    if(el) el.value = ""; 
+                    if(el) {
+                        el.value = ""; 
+                        el.classList.remove('readonly-locked');
+                        if(id !== 'line_name') el.removeAttribute('readonly');
+                    }
                 });
+                document.getElementById('line_name').classList.add('clickable');
+                document.getElementById('line_name').setAttribute('readonly', 'true');
+                
                 document.getElementById('shift_hours').innerText = ""; calculate(); 
                 
                 populateBuyerSelect(); updateDropdowns('buyer'); 
@@ -1178,7 +1261,7 @@ LL.Bean,522846,Indigo Ink
             tanggal: document.getElementById('tanggal').value, jam: currentJam, line_name: line, 
             buyer: document.getElementById('buyer').value || "-", style: document.getElementById('style').value || "-", color: document.getElementById('color').value || "-", 
             qty_order: document.getElementById('qty_order').value || 0,
-            qty_deliver: document.getElementById('deliver').value || 0,
+            deliver: document.getElementById('deliver').value || "-", 
             qty_send: document.getElementById('qty_send').value || 0,
             qty_receive: document.getElementById('qty_receive').value || 0,
             qty_rar: document.getElementById('qty_rar').value || 0,
@@ -1218,7 +1301,7 @@ LL.Bean,522846,Indigo Ink
 
     function clearAfterSubmit() {
         activeDefects = {}; renderDefectList();
-        ['style','color','qty_good','qty_order','deliver','qty_send','qty_receive','qty_rar','from_sewing','send_washing','received_washing'].forEach(id => { 
+        ['qty_good','qty_send','qty_receive','qty_rar'].forEach(id => { 
             let el = document.getElementById(id);
             if(el) el.value = ""; 
         });
