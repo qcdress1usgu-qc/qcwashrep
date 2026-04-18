@@ -159,6 +159,11 @@
             transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex; flex-direction: column; gap: 12px;
         }
+        /* PERBAIKAN ANIMASI MENU DI SINI */
+        .sheet-overlay.show .bottom-sheet {
+            transform: translateY(0);
+        }
+        
         .sheet-handle {
             width: 40px; height: 5px; background: var(--border-line);
             border-radius: 5px; margin: 0 auto 15px auto;
@@ -216,7 +221,9 @@
             <div class="main-title">QC WASHING DASHBOARD</div>
             <div class="sub-title">QUALITY ENGINEERING USGU DRESS 1 <span class="version-badge" id="verBadge">v1.1</span></div>
         </div>
-        <div class="theme-toggle-logo" id="themeBtn" onclick="toggleTheme()" style="color: white; text-align: center; font-size: 18px; font-weight: bold; line-height: 20px;">&#9728;</div>
+        <div class="theme-toggle-logo" id="themeBtn" onclick="toggleTheme()" style="background: transparent; padding: 0; display: flex; align-items: center; justify-content: center;">
+            <img src="logolight.png" alt="Toggle Theme" style="width: 32px; height: 32px; object-fit: contain;">
+        </div>
     </div>
 </div>
 
@@ -407,9 +414,9 @@
     <div class="action-buttons">
         <button class="btn-menu" onclick="openActionSheet()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
+                <circle cx="12" cy="5" r="2"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+                <circle cx="12" cy="19" r="2"></circle>
             </svg>
         </button>
         <button class="btn-server" id="btnSubmitMain" onclick="showSummaryAndSubmit()">CONFIRM & SUBMIT</button>
@@ -419,6 +426,7 @@
 <div id="actionSheet" class="sheet-overlay" onclick="closeActionSheet(event)">
     <div class="bottom-sheet" onclick="event.stopPropagation()">
         <div class="sheet-handle"></div>
+        <button class="sheet-btn" style="color: var(--primary);" onclick="recapSPV()">REVIEW & TUTUP SHIFT (SPV)</button>
         <button class="sheet-btn" onclick="runAction(resetForm)">RESET FORMULIR</button>
         <button class="sheet-btn" onclick="runAction(exportToExcel)">DOWNLOAD EXCEL</button>
     </div>
@@ -916,7 +924,6 @@ LL.Bean,522846,Indigo Ink
         const typeCont = document.getElementById('type_container');
         const areaCont = document.getElementById('area_container');
         
-        // Sembunyikan bagian "Jenis Defect" jika WASHING dan atur Area agar full lebar
         if(cat === 'WASHING') {
             typeCont.style.display = 'none';
             areaCont.style.gridColumn = 'span 2';
@@ -1174,7 +1181,7 @@ LL.Bean,522846,Indigo Ink
             qty_deliver: document.getElementById('deliver').value || 0,
             qty_send: document.getElementById('qty_send').value || 0,
             qty_receive: document.getElementById('qty_receive').value || 0,
-            qty_rar: document.getElementById('qty_rar').value || 0, // Mengirim data RAR
+            qty_rar: document.getElementById('qty_rar').value || 0,
             from_sewing: document.getElementById('from_sewing').value || "-",
             send_washing: document.getElementById('send_washing').value || "-",
             received_washing: document.getElementById('received_washing').value || "-",
@@ -1247,7 +1254,6 @@ LL.Bean,522846,Indigo Ink
         const workbook = new ExcelJS.Workbook(); const sheet = workbook.addWorksheet("QC Washing", { views: [{ showGridLines: false }] });
         sheet.getColumn('A').width = 8; sheet.getColumn('B').width = 15; sheet.getColumn('C').width = 25; sheet.getColumn('D').width = 25; sheet.getColumn('E').width = 12;
         
-        // Baris Header Tanpa RFT (Disesuaikan)
         const headers1_13 = [
             ["ORDER/BUYER", document.getElementById('buyer').value],
             ["LINE", document.getElementById('line_name').value],
@@ -1269,7 +1275,6 @@ LL.Bean,522846,Indigo Ink
             sheet.mergeCells(`A${i+1}:C${i+1}`);
         });
 
-        // 3 Baris Tanggal Output
         sheet.addRow(["FIRST OUTPUT DATE", "", "FROM SEWING", document.getElementById('from_sewing').value]); 
         sheet.addRow(["", "", "SEND WASHING", document.getElementById('send_washing').value]); 
         sheet.addRow(["", "", "RECEIVED WASHING", document.getElementById('received_washing').value]); 
@@ -1320,6 +1325,57 @@ LL.Bean,522846,Indigo Ink
             });
         });
         const buffer = await workbook.xlsx.writeBuffer(); saveAs(new Blob([buffer]), `QC_Washing_${buyer || 'Offline'}_${dateStr}.xlsx`);
+    }
+
+    // FUNGSI UNTUK SPV TUTUP SHIFT
+    function recapSPV() {
+        closeActionSheet(); // Menutup menu titik tiga dulu
+        setTimeout(() => {
+            Swal.fire({
+                title: 'OTORISASI SUPERVISOR',
+                input: 'password',
+                inputPlaceholder: 'Masukkan Password SPV',
+                inputAttributes: { autocapitalize: 'off', autocorrect: 'off' },
+                showCancelButton: true,
+                confirmButtonColor: '#1e3a8a',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'LANJUTKAN',
+                cancelButtonText: 'BATAL'
+            }).then((result) => {
+                if(result.isConfirmed) {
+                    if(result.value === 'WASHD1') { 
+                        executeReviewData();
+                    } else { 
+                        Swal.fire('Akses Ditolak', 'Password salah atau tidak valid.', 'error'); 
+                    }
+                }
+            });
+        }, 300);
+    }
+
+    function executeReviewData() {
+        if(!SCRIPT_URL) return;
+        document.getElementById('loading').style.display = 'flex';
+        document.getElementById('loading-text').innerText = "MENGEKSEKUSI TUTUP SHIFT...";
+        
+        const payload = { 
+            action: "recap", 
+            version: APP_VERSION, 
+            password: "WASHD1" 
+        };
+
+        fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain;charset=utf-8' }})
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            if(data.result === "success") { 
+                Swal.fire('Berhasil!', 'Shift telah ditutup. Data Daily di Summary telah di-reset dan Dashboard baru telah disiapkan.', 'success'); 
+            } 
+            else { Swal.fire('Error', data.error, 'error'); }
+        }).catch(err => { 
+            document.getElementById('loading').style.display = 'none'; 
+            Swal.fire('Gagal Koneksi', 'Pastikan internet stabil untuk melakukan penutupan shift.', 'error');
+        });
     }
 </script>
 </body>
