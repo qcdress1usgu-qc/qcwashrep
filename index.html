@@ -91,15 +91,7 @@
         input, textarea, select { width: 100%; padding: 14px 12px; border: 1.5px solid var(--border-line); border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--bg-input); color: var(--text-main); font-family: inherit;}
         input:focus, textarea:focus, select:focus { border-color: var(--border-focus); outline: none; box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15); background: var(--bg-card);}
         
-        /* CLASS UNTUK MENGUNCI INPUT SECARA VISUAL & FUNGSI KLIK */
-        input.readonly-locked, select.readonly-locked { 
-            background: var(--bg-readonly) !important; 
-            color: var(--text-sub) !important; 
-            cursor: not-allowed; 
-            border-style: dashed; 
-            pointer-events: none; 
-        }
-        
+        input.readonly-locked, select.readonly-locked { background: var(--bg-readonly) !important; color: var(--text-sub) !important; cursor: not-allowed; border-style: dashed; pointer-events: none; }
         input[readonly].clickable { cursor: pointer; background: var(--bg-input); border: 1.5px solid var(--primary); color: var(--primary); text-align: center; font-size: 15px; font-weight: 800;}
         input[readonly]:not(.clickable):not(.readonly-locked) { background: var(--bg-readonly); font-weight: bold; color: var(--danger); cursor: not-allowed; border-style: dashed; }
         
@@ -239,7 +231,7 @@
         <div class="grid-half" style="margin-top: 14px;">
             <div class="input-group">
                 <label class="req">RUN IN LINE:</label>
-                <input type="text" id="line_name" class="clickable" placeholder="Ketuk Pilih Line" readonly onclick="openLineModal()">
+                <input type="text" id="line_name" class="clickable" readonly onclick="openLineModal()">
             </div>
             <div class="input-group">
                 <label class="req">ORDER / BUYER:</label>
@@ -372,9 +364,8 @@
         <div class="grid-full">
             <div class="input-group">
                 <label class="req" style="color:var(--success);">QTY GOOD QC (TOTAL LULUS):</label>
-                <input type="number" id="qty_good" oninput="formatAntiMinus(this); calculate()" placeholder="" style="text-align: center; font-size: 16px; padding: 16px; color: var(--success); font-weight: 900;">
+                <input type="number" id="qty_good" oninput="formatAntiMinus(this); calculate()" style="text-align: center; font-size: 16px; padding: 16px; color: var(--success); font-weight: 900;">
             </div>
-            
             <input type="hidden" id="tot_def" value="0">
             <input type="hidden" id="qty_insp" value="0">
             <input type="hidden" id="pct_def" value="0%">
@@ -486,7 +477,7 @@
             </div>
 
             <div class="input-group">
-                <label class="req">NAMA SUPPLIER:</label>
+                <label class="req">NAMA SUPPLIER (WASHING):</label>
                 <input type="text" id="gen_supplier">
             </div>
 
@@ -584,9 +575,9 @@
 
     function executeRecapSPV() {
         const handfeel    = document.getElementById('ts_handfeel').value.trim();
-        const color_eval = document.getElementById('ts_color').value.trim();
+        const color_eval  = document.getElementById('ts_color').value.trim();
         const result_wash = document.getElementById('ts_result').value.trim();
-        const tanggal    = document.getElementById('tanggal').value;
+        const tanggal     = document.getElementById('tanggal').value;
 
         const reqDay = tanggal ? tanggal.split('-')[2] : "";
 
@@ -1552,7 +1543,7 @@ LL.Bean,522846,Indigo Ink
                    <b>Color:</b> ${color}<br>
                    <b>Total Inspect:</b> ${t_insp} pcs<br>
                    <b>Total Defect:</b> <span style="color:red; font-weight:bold;">${t_def}</span> pcs<br>
-                   <b>Total Lulus (Otomatis masuk RAR jika step Repair):</b> <span style="color:green; font-weight:bold;">${qty_good}</span> pcs<br><hr>
+                   <b>Total Lulus:</b> <span style="color:green; font-weight:bold;">${qty_good}</span> pcs<br><hr>
                    Kirim ke Server?`,
             icon: 'question', showCancelButton: true,
             confirmButtonColor: '#1e3a8a', cancelButtonColor: '#ef4444',
