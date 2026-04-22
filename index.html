@@ -588,24 +588,44 @@
             result_wash: result_wash
         };
 
+        // TIMEOUT 60 DETIK
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+
         fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify(payload),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            signal: controller.signal
         })
-        .then(res => res.json())
-        .then(data => {
+        .then(res => {
+            clearTimeout(timeoutId);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.text();
+        })
+        .then(text => {
             document.getElementById('loading').style.display = 'none';
-            closeTutupShiftModal();
-            if (data.result === "success") {
-                Swal.fire('Sukses', 'Shift berhasil ditutup! Dashboard baru sudah disiapkan.', 'success');
-            } else {
-                Swal.fire('Gagal', data.error || 'Terjadi kesalahan di server.', 'error');
+            try {
+                const data = JSON.parse(text);
+                closeTutupShiftModal();
+                if (data.result === "success") {
+                    Swal.fire('✅ Sukses', 'Shift berhasil ditutup! Dashboard baru sudah disiapkan.', 'success');
+                } else {
+                    Swal.fire('❌ Gagal', data.error || 'Terjadi kesalahan di server.', 'error');
+                }
+            } catch (e) {
+                closeTutupShiftModal();
+                Swal.fire('⏱️ Timeout', 'Server merespons terlalu lama. Coba lagi atau refresh halaman.', 'error');
             }
         })
-        .catch(() => {
+        .catch((error) => {
+            clearTimeout(timeoutId);
             document.getElementById('loading').style.display = 'none';
-            Swal.fire('Koneksi Gagal', 'Tidak dapat terhubung ke server. Cek koneksi internet Anda.', 'error');
+            if (error.name === 'AbortError') {
+                Swal.fire('⏱️ Timeout', 'Proses lebih dari 60 detik. Cek Apps Script deployment.', 'error');
+            } else {
+                Swal.fire('❌ Koneksi Gagal', 'Error: ' + error.message, 'error');
+            }
         });
     }
 
@@ -656,26 +676,42 @@
         document.getElementById('loading').style.display = 'flex';
         document.getElementById('loading-text').innerText = "MEMUAT DATA TRACKER...";
 
+        // TIMEOUT 30 DETIK
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
         // Request ke Apps Script untuk mengambil data dari D_DEFECT
         fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify({ action: "get_tracker", password: "WASHD1" }),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            signal: controller.signal
         })
-        .then(res => res.json())
-        .then(data => {
+        .then(res => {
+            clearTimeout(timeoutId);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.text();
+        })
+        .then(text => {
             document.getElementById('loading').style.display = 'none';
-            if (data.result === "success" && data.tracker_data) {
-                renderTrackerList(data.tracker_data);
-            } else {
-                console.log("Server merespon tapi mungkin belum punya action get_tracker. Memunculkan dummy fallback untuk demonstrasi.");
-                renderDummyTracker(); // FALLBACK JIKA BACKEND BELUM SIAP
+            try {
+                const data = JSON.parse(text);
+                if (data.result === "success" && data.tracker_data) {
+                    renderTrackerList(data.tracker_data);
+                } else {
+                    console.log("Gagal ambil data tracker, gunakan fallback");
+                    renderDummyTracker();
+                }
+            } catch (e) {
+                console.log("Response bukan JSON, gunakan fallback");
+                renderDummyTracker();
             }
         })
-        .catch(() => {
+        .catch((error) => {
+            clearTimeout(timeoutId);
             document.getElementById('loading').style.display = 'none';
-            console.log("Gagal koneksi. Memunculkan dummy fallback.");
-            renderDummyTracker(); // FALLBACK JIKA OFFLINE/GAGAL KONEK
+            console.log("Koneksi gagal atau timeout, gunakan fallback: " + error.message);
+            renderDummyTracker();
         });
     }
 
@@ -735,6 +771,13 @@
             return;
         }
 
+        // CEK URL SCRIPT DULU
+        if (!SCRIPT_URL || SCRIPT_URL.includes("ISI_DENGAN_LINK") || SCRIPT_URL.trim() === "") {
+            document.getElementById('loading').style.display = 'none';
+            Swal.fire('Error Konfigurasi', '❌ URL Apps Script belum dikonfigurasi!\n\nMinta ke Admin untuk set SCRIPT_URL yang benar di file HTML.', 'error');
+            return;
+        }
+
         document.getElementById('loading').style.display = 'flex';
         document.getElementById('loading-text').innerText = "GENERATING SUMMARY BUYER...";
 
@@ -748,24 +791,79 @@
             shipment: shipment
         };
 
+        // FETCH DENGAN TIMEOUT 60 DETIK
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 sec timeout
+
         fetch(SCRIPT_URL, {
             method: 'POST',
             body: JSON.stringify(payload),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            signal: controller.signal // Untuk timeout
         })
-        .then(res => res.json())
-        .then(data => {
+        .then(res => {
+            clearTimeout(timeoutId);
+            
+            // CEK HTTP STATUS DULU
+            if (!res.ok) {
+                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+            }
+            return res.text();
+        })
+        .then(text => {
             document.getElementById('loading').style.display = 'none';
-            closeGenBuyerModal();
-            if (data.result === "success") {
-                Swal.fire('Sukses', 'Summary Buyer berhasil digenerate di Spreadsheet!', 'success');
-            } else {
-                Swal.fire('Gagal', data.error || 'Terjadi kesalahan di server.', 'error');
+            
+            // COBA PARSE JSON
+            try {
+                const data = JSON.parse(text);
+                closeGenBuyerModal();
+                if (data.result === "success") {
+                    Swal.fire('✅ Sukses', 'Summary Buyer berhasil digenerate!\n\nCek spreadsheet sheet baru: ' + selectedTrackerData.buyer, 'success');
+                } else {
+                    Swal.fire('⚠️ Gagal', 'Error dari server:\n' + (data.error || 'Tidak ada pesan error'), 'error');
+                }
+            } catch (parseErr) {
+                // RESPONSE BUKAN JSON = TIMEOUT ATAU ERROR GOOGLE
+                closeGenBuyerModal();
+                console.error("Respons Server (Raw):", text.substring(0, 500));
+                Swal.fire(
+                    '⏱️ Server Timeout',
+                    'Apps Script terlalu lama merespons (>60 detik).\n\n✅ Solusi:\n1. Buka Google Sheets manual\n2. Buka Apps Script (Tools > Script Editor)\n3. Klik Deploy > Manage Deployments\n4. Pastikan deployment masih AKTIF',
+                    'error'
+                );
             }
         })
-        .catch(() => {
+        .catch((error) => {
+            clearTimeout(timeoutId);
             document.getElementById('loading').style.display = 'none';
-            Swal.fire('Koneksi Gagal', 'Tidak dapat terhubung ke server. Cek koneksi internet Anda.', 'error');
+            
+            // DETEKSI JENIS ERROR
+            let errorMsg = error.message;
+            if (error.name === 'AbortError') {
+                Swal.fire(
+                    '⏱️ Timeout (>60 detik)',
+                    'Server sangat lambat. Mungkin:\n\n❌ Apps Script deployment tidak aktif\n❌ Spreadsheet sedang sibuk\n❌ Network sangat lambat\n\n✅ Coba: Buka Manual di Google Sheets',
+                    'error'
+                );
+            } else if (errorMsg.includes('Failed to fetch')) {
+                Swal.fire(
+                    '❌ Koneksi Gagal',
+                    'Tidak bisa terhubung ke server Google.\n\nPeriksa:\n✓ Internet aktif?\n✓ URL Apps Script benar?\n✓ Apps Script sudah di-Deploy?',
+                    'error'
+                );
+            } else {
+                Swal.fire(
+                    '❌ Error: ' + error.name,
+                    'Detail: ' + errorMsg,
+                    'error'
+                );
+            }
+            
+            console.error("Fetch Error Details:", {
+                name: error.name,
+                message: error.message,
+                url: SCRIPT_URL
+            });
         });
     }
 
