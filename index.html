@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>QC WASHING DASHBOARD v1.1</title>
+    <title>QC WASHING DASHBOARD v1.0</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -11,6 +11,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
     
     <style>
+        /* MEMAKSA NOTIFIKASI SELALU PALING DEPAN */
+        .swal2-container { z-index: 10000 !important; }
+
         :root { 
             --bg-body: #f3f4f6; 
             --bg-card: #ffffff; 
@@ -144,7 +147,8 @@
         .modal-overlay.show .modal-box { transform: scale(1); }
         .modal-title { font-weight: 900; color: var(--primary); font-size: 16px; text-align: center; border-bottom: 2px solid var(--border-line); padding-bottom: 10px;}
 
-        #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); color: white; z-index: 4000; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; flex-direction: column; text-align: center; backdrop-filter: blur(4px); letter-spacing: 1px;}
+        /* LOADING HARUS LEBIH TINGGI DARI SEMUANYA */
+        #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); color: white; z-index: 9999; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; flex-direction: column; text-align: center; backdrop-filter: blur(4px); letter-spacing: 1px;}
         .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -171,6 +175,14 @@
         .btn-add-line { background: var(--bg-input); color: var(--primary); border: 2px solid var(--primary); padding: 14px; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 1;}
         .btn-save-line { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 2;}
 
+        /* CSS KHUSUS TRACKER */
+        .tracker-list { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; border: 1px solid var(--border-line); border-radius: 8px; padding: 8px; background: var(--bg-readonly);}
+        .tracker-item { padding: 12px; background: var(--bg-input); border: 2px solid var(--border-line); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--text-main); display: flex; flex-direction: column; gap: 5px; transition: all 0.2s; }
+        .tracker-item:active { transform: scale(0.98); }
+        .tracker-item.selected { background: var(--primary-grad); color: white; border-color: var(--primary); box-shadow: var(--shadow-md); }
+        .tracker-badge { font-size: 10px; background: var(--accent); color: var(--text-brand); padding: 3px 8px; border-radius: 4px; display: inline-block; width: max-content; font-weight: 900;}
+        .tracker-item.selected .tracker-badge { background: white; color: var(--primary); }
+
         @media (min-width: 600px) { .grid-half { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
@@ -182,10 +194,10 @@
     <div class="header-content">
         <div class="title-area">
             <div class="main-title">QC WASHING DASHBOARD</div>
-            <div class="sub-title">QUALITY ENGINEERING USGU DRESS 1 <span class="version-badge" id="verBadge">v1.1</span></div>
+            <div class="sub-title">QUALITY ENGINEERING USGU DRESS 1 <span class="version-badge" id="verBadge">v1.0</span></div>
         </div>
         <div class="theme-toggle-logo" id="themeBtn" onclick="toggleTheme()">
-            <img src="logolight.png" alt="Toggle Theme" style="width: 32px; height: 32px; object-fit: contain;">
+            <img src="logolight.png" alt="Toggle Theme" style="width: 32px; height: 32px; object-fit: contain;" onerror="this.style.display='none'">
         </div>
     </div>
 </div>
@@ -454,35 +466,17 @@
         </div>
 
         <div id="gen_step2" style="display:none;">
-            <div class="input-group">
-                <label class="req">BUYER:</label>
-                <select id="gen_buyer" onchange="updateGenDropdowns('buyer')">
-                    <option value="" disabled selected>-- Pilih Buyer --</option>
-                </select>
-            </div>
-            
-            <div class="grid-half">
-                <div class="input-group">
-                    <label class="req">STYLE:</label>
-                    <select id="gen_style" onchange="updateGenDropdowns('style')">
-                        <option value="" disabled selected>-- Pilih Style --</option>
-                    </select>
+            <label style="font-size: 11px; font-weight: 800; color: var(--text-sub); margin-bottom: 6px; display: block;" class="req">1. PILIH DATA TRACKER (KLIK):</label>
+            <div class="tracker-list" id="tracker_list">
                 </div>
-                <div class="input-group">
-                    <label class="req">COLOR:</label>
-                    <select id="gen_color">
-                        <option value="" disabled selected>-- Pilih Color --</option>
-                    </select>
-                </div>
-            </div>
 
             <div class="input-group">
-                <label class="req">NAMA SUPPLIER (WASHING):</label>
+                <label class="req">2. NAMA SUPPLIER (WASHING):</label>
                 <input type="text" id="gen_supplier">
             </div>
 
-            <div class="input-group">
-                <label class="req">TANGGAL SHIPMENT:</label>
+            <div class="input-group" style="margin-top: 10px;">
+                <label class="req">3. TANGGAL SHIPMENT:</label>
                 <input type="date" id="gen_shipment">
             </div>
             
@@ -513,7 +507,7 @@
     document.addEventListener('contextmenu', event => event.preventDefault());
 
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuOY8WNXD384d5LgEi6eaxpNGMWh5zAMXQtzeUY5Ef838jG7uAVl2pDePHKfNZQ14S/exec";
-    const APP_VERSION = "1.1";
+    const APP_VERSION = "1.0";
 
     let defectChart;
 
@@ -616,8 +610,10 @@
     }
 
     // =============================================
-    // MODAL GENERATE SUMMARY BUYER
+    // MODAL GENERATE SUMMARY BUYER & TRACKER
     // =============================================
+    let selectedTrackerData = null;
+
     function openGenBuyerModal() {
         closeActionSheet();
         setTimeout(() => {
@@ -625,6 +621,11 @@
             document.getElementById('gen_step1').style.display = 'block';
             document.getElementById('gen_step2').style.display = 'none';
             document.getElementById('gen_pass').value = '';
+            
+            // Reset state
+            selectedTrackerData = null;
+            document.getElementById('tracker_list').innerHTML = '';
+            
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('show'), 10);
         }, 300);
@@ -638,30 +639,93 @@
         ['gen_pass', 'gen_supplier', 'gen_shipment'].forEach(id => {
             document.getElementById(id).value = "";
         });
+        selectedTrackerData = null;
     }
 
     function verifyGenPass() {
         const pass = document.getElementById('gen_pass').value;
         if (pass === 'WASHD1') {
             document.getElementById('gen_step1').style.display = 'none';
-            document.getElementById('gen_step2').style.display = 'block';
-            populateGenDropdowns();
+            fetchTrackerData(); // Panggil fungsi ambil data Tracker
         } else {
             Swal.fire('Akses Ditolak', 'Password SPV Salah!', 'error');
         }
     }
 
+    function fetchTrackerData() {
+        document.getElementById('loading').style.display = 'flex';
+        document.getElementById('loading-text').innerText = "MEMUAT DATA TRACKER...";
+
+        // Request ke Apps Script untuk mengambil data dari D_DEFECT
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "get_tracker", password: "WASHD1" }),
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            if (data.result === "success" && data.tracker_data) {
+                renderTrackerList(data.tracker_data);
+            } else {
+                console.log("Server merespon tapi mungkin belum punya action get_tracker. Memunculkan dummy fallback untuk demonstrasi.");
+                renderDummyTracker(); // FALLBACK JIKA BACKEND BELUM SIAP
+            }
+        })
+        .catch(() => {
+            document.getElementById('loading').style.display = 'none';
+            console.log("Gagal koneksi. Memunculkan dummy fallback.");
+            renderDummyTracker(); // FALLBACK JIKA OFFLINE/GAGAL KONEK
+        });
+    }
+
+    function renderDummyTracker() {
+        // Data bohongan supaya UI tetap bisa diklik-klik jika server belum disetting
+        const dummy = [
+            { buyer: 'CK NA', style: '44C148G', color: 'Billowing Sail' },
+            { buyer: 'TH EU', style: 'XM0XM04862', color: 'Provence' },
+            { buyer: 'PERRY ELLIS', style: '4KFW7005', color: 'Ashleigh Blue' },
+            { buyer: 'VICTORIA\'S SECRET', style: '10241546', color: 'Coconut White' }
+        ];
+        renderTrackerList(dummy);
+    }
+
+    function renderTrackerList(items) {
+        document.getElementById('gen_step2').style.display = 'block';
+        const list = document.getElementById('tracker_list');
+        selectedTrackerData = null;
+
+        if (!items || items.length === 0) {
+            list.innerHTML = `<div class="empty-state">TIDAK ADA DATA DI D_DEFECT SAAT INI.</div>`;
+            return;
+        }
+
+        list.innerHTML = items.map((item, index) => `
+            <div class="tracker-item" id="tracker_item_${index}" onclick="selectTrackerItem(${index}, '${item.buyer}', '${item.style}', '${item.color}')">
+                <span class="tracker-badge">${item.buyer}</span>
+                <span>${item.style} - ${item.color}</span>
+            </div>
+        `).join('');
+    }
+
+    function selectTrackerItem(index, buyer, style, color) {
+        // Hapus styling selected dari semua elemen list
+        document.querySelectorAll('.tracker-item').forEach(el => el.classList.remove('selected'));
+        // Tambahkan styling selected ke elemen yang diklik
+        document.getElementById(`tracker_item_${index}`).classList.add('selected');
+        // Simpan data yang dipilih
+        selectedTrackerData = { buyer, style, color };
+    }
+
     function executeGenerateSummaryBuyer() {
-        const buyer    = document.getElementById('gen_buyer').value;
-        const style    = document.getElementById('gen_style').value;
-        const color    = document.getElementById('gen_color').value;
+        if (!selectedTrackerData) {
+            Swal.fire('Perhatian', 'Silakan klik / pilih salah satu data dari Tracker terlebih dahulu!', 'warning');
+            return;
+        }
+
         const supplier = document.getElementById('gen_supplier').value.trim();
         const shipment = document.getElementById('gen_shipment').value;
 
-        if (!buyer || !style || !color) {
-            Swal.fire('Perhatian', 'Buyer, Style, dan Color wajib dipilih!', 'warning');
-            return;
-        }
         if (!supplier) {
             Swal.fire('Perhatian', 'Nama Supplier wajib diisi!', 'warning');
             return;
@@ -677,9 +741,9 @@
         const payload = {
             action:   "generate_summary",
             password: "WASHD1",
-            buyer:    buyer,
-            style:    style,
-            color:    color,
+            buyer:    selectedTrackerData.buyer,
+            style:    selectedTrackerData.style,
+            color:    selectedTrackerData.color,
             supplier: supplier,
             shipment: shipment
         };
@@ -986,27 +1050,11 @@ LL.Bean,522846,Indigo Ink
         if (mappedBuyers.includes(currentVal)) buyerSelect.value = currentVal;
     }
 
-    function populateGenDropdowns() {
-        let buyerSelect = document.getElementById('gen_buyer');
-        let currentVal = buyerSelect.value;
-        let mappedBuyers = [...new Set(dynamicDB.map(r => r.buyer))].filter(Boolean).sort();
-        buyerSelect.innerHTML = '<option value="" disabled selected>-- Pilih Buyer --</option>' +
-            mappedBuyers.map(b => `<option value="${b}">${b}</option>`).join('');
-        if (mappedBuyers.includes(currentVal)) buyerSelect.value = currentVal;
-    }
-
     function updateDropdowns(source) {
         _updateDropdownsLogic(source,
             document.getElementById('buyer'),
             document.getElementById('style'),
             document.getElementById('color'));
-    }
-
-    function updateGenDropdowns(source) {
-        _updateDropdownsLogic(source,
-            document.getElementById('gen_buyer'),
-            document.getElementById('gen_style'),
-            document.getElementById('gen_color'));
     }
 
     function _updateDropdownsLogic(source, buyerSelect, styleSelect, colorSelect) {
