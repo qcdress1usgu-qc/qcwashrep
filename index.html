@@ -482,23 +482,30 @@
             </div>
 
             <div id="gen_step2" style="display:none;">
-                <label style="font-size: 11px; font-weight: 800; color: var(--text-sub); margin-bottom: 6px; display: block;" class="req">1. PILIH DATA TRACKER (KLIK):</label>
-                <div class="tracker-list" id="tracker_list">
+                <div id="gen_list_view">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-sub); margin-bottom: 6px; display: block;" class="req">1. PILIH DATA TRACKER (YANG AKAN DIGENERATE):</label>
+                    <div class="tracker-list" id="tracker_list">
+                        </div>
+                    <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger); width: 100%; margin-top: 10px;" onclick="closeGenBuyerModal()">TUTUP</button>
+                </div>
+
+                <div id="gen_form_view" style="display:none;">
+                    <div style="font-weight:900; color:var(--success); margin-bottom:12px; border-bottom: 2px solid var(--border-line); padding-bottom: 8px; text-align: center; font-size: 15px;" id="gen_selected_label"></div>
+                    
+                    <div class="input-group">
+                        <label class="req">2. NAMA SUPPLIER :</label>
+                        <input type="text" id="gen_supplier">
                     </div>
 
-                <div class="input-group">
-                    <label class="req">2. NAMA SUPPLIER :</label>
-                    <input type="text" id="gen_supplier">
-                </div>
-
-                <div class="input-group" style="margin-top: 10px;">
-                    <label class="req">3. TANGGAL SHIPMENT:</label>
-                    <input type="date" id="gen_shipment">
-                </div>
-                
-                <div class="grid-half" style="margin-top: 15px;">
-                    <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger);" onclick="closeGenBuyerModal()">BATAL</button>
-                    <button class="btn-save-line" style="background:var(--success); border-color:var(--success);" onclick="executeGenerateSummaryBuyer()">GENERATE</button>
+                    <div class="input-group" style="margin-top: 10px;">
+                        <label class="req">3. TANGGAL SHIPMENT:</label>
+                        <input type="date" id="gen_shipment">
+                    </div>
+                    
+                    <div class="grid-half" style="margin-top: 15px;">
+                        <button class="btn-save-line" style="background:var(--text-sub); border-color:var(--text-sub);" onclick="backToGenList()">KEMBALI</button>
+                        <button class="btn-save-line" style="background:var(--success); border-color:var(--success);" onclick="executeGenerateSummaryBuyer()">GENERATE</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -549,7 +556,7 @@
         }
 
         // =============================================
-        // MODAL EVALUASI & TUTUP SHIFT (DIUBAH)
+        // MODAL EVALUASI & TUTUP SHIFT
         // =============================================
         let selectedTSData = null;
         let completedTSItems = []; // Untuk simpan state centang sementara modal terbuka
@@ -750,9 +757,6 @@
             });
         }
 
-        // =============================================
-        // FUNGSI UNTUK FINALISASI (MENUTUP SHIFT & CETAK SHEET BARU)
-        // =============================================
         function finalizeTutupShift() {
             // Kalau hari ini sama sekali belum ada produksi, langsung tutup modalnya saja
             if (totalTSItems === 0) {
@@ -810,11 +814,11 @@
             });
         }
 
-
         // =============================================
         // MODAL GENERATE SUMMARY BUYER & TRACKER
         // =============================================
         let selectedTrackerData = null;
+        let completedGenItems = []; // Array untuk menyimpan index yang sudah digenerate
 
         function openGenBuyerModal() {
             closeActionSheet();
@@ -824,8 +828,8 @@
                 document.getElementById('gen_step2').style.display = 'none';
                 document.getElementById('gen_pass').value = '';
                 
-                // Reset state
                 selectedTrackerData = null;
+                completedGenItems = []; // Reset state centang hijau
                 document.getElementById('tracker_list').innerHTML = '';
                 
                 modal.style.display = 'flex';
@@ -838,9 +842,14 @@
             const modal = document.getElementById('summaryBuyerModal');
             modal.classList.remove('show');
             setTimeout(() => modal.style.display = 'none', 300);
+            
             ['gen_pass', 'gen_supplier', 'gen_shipment'].forEach(id => {
                 document.getElementById(id).value = "";
             });
+            
+            // Kembalikan view ke list untuk antisipasi buka ulang
+            document.getElementById('gen_list_view').style.display = 'block';
+            document.getElementById('gen_form_view').style.display = 'none';
             selectedTrackerData = null;
         }
 
@@ -862,7 +871,6 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-            // Request ke Apps Script untuk mengambil data dari D_DEFECT
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: "get_tracker", password: "WASHD1" }),
@@ -898,6 +906,9 @@
 
         function renderTrackerList(items) {
             document.getElementById('gen_step2').style.display = 'block';
+            document.getElementById('gen_list_view').style.display = 'block';
+            document.getElementById('gen_form_view').style.display = 'none';
+            
             const list = document.getElementById('tracker_list');
             selectedTrackerData = null;
 
@@ -906,28 +917,45 @@
                 return;
             }
 
-            list.innerHTML = items.map((item, index) => `
-                <div class="tracker-item" id="tracker_item_${index}" onclick="selectTrackerItem(${index}, '${item.buyer}', '${item.style}', '${item.color}')">
-                    <span class="tracker-badge">${item.buyer}</span>
-                    <span>${item.style} - ${item.color}</span>
+            list.innerHTML = items.map((item, index) => {
+                let isDoneClass = completedGenItems.includes(index) ? 'done' : '';
+                return `
+                <div class="tracker-item ${isDoneClass}" id="gen_item_${index}" onclick="selectTrackerItem(${index}, '${item.buyer}', '${item.style}', '${item.color}')">
+                    <div style="display:flex; flex-direction:column; gap:5px;">
+                        <span class="tracker-badge">${item.buyer}</span>
+                        <span>${item.style} - ${item.color}</span>
+                    </div>
+                    <span class="badge-done">✅</span>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function selectTrackerItem(index, buyer, style, color) {
-            // Hapus styling selected dari semua elemen list
-            document.querySelectorAll('.tracker-item').forEach(el => el.classList.remove('selected'));
-            // Tambahkan styling selected ke elemen yang diklik
-            document.getElementById(`tracker_item_${index}`).classList.add('selected');
-            // Simpan data yang dipilih
-            selectedTrackerData = { buyer, style, color };
+            selectedTrackerData = { index, buyer, style, color };
+            
+            // Set label yang sedang dikerjakan
+            document.getElementById('gen_selected_label').innerText = `${buyer} | ${style} - ${color}`;
+            
+            // Kosongkan inputan form
+            ['gen_supplier', 'gen_shipment'].forEach(id => {
+                document.getElementById(id).value = "";
+            });
+            
+            // Sembunyikan list, munculkan form
+            document.getElementById('gen_list_view').style.display = 'none';
+            document.getElementById('gen_form_view').style.display = 'block';
+        }
+
+        function backToGenList() {
+            // Kembali ke daftar pilihan tanpa menutup modal
+            document.getElementById('gen_list_view').style.display = 'block';
+            document.getElementById('gen_form_view').style.display = 'none';
+            selectedTrackerData = null;
         }
 
         function executeGenerateSummaryBuyer() {
-            if (!selectedTrackerData) {
-                Swal.fire('Perhatian', 'Silakan klik / pilih salah satu data dari Tracker terlebih dahulu!', 'warning');
-                return;
-            }
+            if (!selectedTrackerData) return;
 
             const supplier = document.getElementById('gen_supplier').value.trim();
             const shipment = document.getElementById('gen_shipment').value;
@@ -963,19 +991,31 @@
             .finally(() => {
                 // INI AKAN SELALU DIJALANKAN APAPUN YANG TERJADI
                 document.getElementById('loading').style.display = 'none';
-                closeGenBuyerModal(); // Tutup modal generate
                 
-                // Kasih jeda 400ms biar animasi modal selesai, lalu panggil SweetAlert
+                // Tambahkan index ke array completed agar dapat centang hijau
+                if (!completedGenItems.includes(selectedTrackerData.index)) {
+                    completedGenItems.push(selectedTrackerData.index);
+                }
+
+                // Update UI list untuk menampilkan centang
+                let itemEl = document.getElementById(`gen_item_${selectedTrackerData.index}`);
+                if(itemEl) {
+                    itemEl.classList.add('done');
+                }
+
+                // Kasih jeda 400ms biar loading hilang dulu, lalu panggil SweetAlert
                 setTimeout(() => {
                     Swal.fire({
                         title: '✅ BERHASIL',
                         text: 'Summary Buyer berhasil digenerate! Silakan cek Spreadsheet Anda.',
                         icon: 'success',
-                        confirmButtonText: 'Tutup',
-                        confirmButtonColor: '#10b981',
-                        allowOutsideClick: false // Paksa user klik tombol Tutup
+                        timer: 1500,
+                        showConfirmButton: false
                     });
                 }, 400); 
+
+                // Otomatis kembali ke menu list
+                backToGenList();
             });
         }
 
