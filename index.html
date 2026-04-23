@@ -1,1231 +1,1141 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>QC WASHING DASHBOARD v1.0</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
-    
-    <style>
-        /* MEMAKSA NOTIFIKASI SELALU PALING DEPAN */
-        .swal2-container { z-index: 10000 !important; }
+    <html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>QC WASHING DASHBOARD v1.0</title>
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+        
+        <style>
+            /* MEMAKSA NOTIFIKASI SELALU PALING DEPAN */
+            .swal2-container { z-index: 10000 !important; }
 
-        :root { 
-            --bg-body: #f3f4f6; 
-            --bg-card: #ffffff; 
-            --bg-input: #f8fafc; 
-            --bg-readonly: #e5e7eb;
-            --bg-section: #e5e7eb; 
-            --bg-stepper: #e5e7eb; 
+            :root { 
+                --bg-body: #f3f4f6; 
+                --bg-card: #ffffff; 
+                --bg-input: #f8fafc; 
+                --bg-readonly: #e5e7eb;
+                --bg-section: #e5e7eb; 
+                --bg-stepper: #e5e7eb; 
+                
+                --text-main: #1f2937; 
+                --text-sub: #6b7280; 
+                --text-brand: #0f172a; 
+                
+                --border-line: #d1d5db; 
+                --border-focus: #1e3a8a; 
+                
+                --primary: #1e3a8a; 
+                --primary-grad: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+                
+                --accent: #f59e0b; 
+                --success: #10b981; 
+                --danger: #ef4444; 
+                
+                --shadow-sm: 0 1px 3px rgba(30, 58, 138, 0.1); 
+                --shadow-md: 0 4px 6px -1px rgba(30, 58, 138, 0.15); 
+                --shadow-btn: 0 4px 14px 0 rgba(245, 158, 11, 0.3); 
+                --shadow-top: 0 -4px 15px rgba(0,0,0,0.05);
+            }
+            .dark-mode {
+                --bg-body: #0f172a; 
+                --bg-card: #1e293b; 
+                --bg-input: #334155; 
+                --bg-readonly: #1e293b;
+                --bg-section: #334155; 
+                --bg-stepper: #334155; 
+                
+                --text-main: #f8fafc; 
+                --text-sub: #94a3b8; 
+                --text-brand: #fbbf24; 
+                
+                --border-line: #475569; 
+                --border-focus: #fbbf24;
+                
+                --primary: #3b82f6; 
+                --primary-grad: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                
+                --accent: #fbbf24; 
+                --shadow-top: 0 -4px 15px rgba(0,0,0,0.4);
+                --shadow-btn: 0 4px 14px 0 rgba(59, 130, 246, 0.3); 
+            }
+
+            * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+            body { 
+                font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg-body); 
+                margin: 0; font-size: 14px; color: var(--text-main); 
+                transition: background-color 0.3s, color 0.3s; user-select: none; -webkit-user-select: none; 
+            }
+            input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+            input[type="number"] { -moz-appearance: textfield; }
+
+            .header { background: var(--bg-card); border-bottom: 3px solid var(--accent); box-shadow: var(--shadow-md); padding: 16px 15px; position: sticky; top: 0; z-index: 100;}
+            .header-content { display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto; }
+            .title-area { display: flex; flex-direction: column; cursor: pointer; }
+            .main-title { font-weight: 900; color: var(--text-brand); font-size: 1.2rem; letter-spacing: 0.5px; }
+            .sub-title { font-size: 10px; color: var(--text-sub); font-weight: bold; letter-spacing: 1px; margin-top: 4px; }
+            .version-badge { background: var(--accent); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 9px; margin-left: 6px; font-weight: 900;}
             
-            --text-main: #1f2937; 
-            --text-sub: #6b7280; 
-            --text-brand: #0f172a; 
+            .theme-toggle-logo { height: 28px; width: 28px; object-fit: contain; cursor: pointer; transition: transform 0.2s ease; background-color: transparent; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center;}
+            .theme-toggle-logo:active { transform: scale(0.85); }
             
-            --border-line: #d1d5db; 
-            --border-focus: #1e3a8a; 
+            .container { padding: 15px; max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 100px;}
+            .card { background: var(--bg-card); border-radius: 12px; padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-line); }
             
-            --primary: #1e3a8a; 
-            --primary-grad: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+            .input-group { position: relative; display: flex; flex-direction: column; gap: 6px;}
+            label { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
+            .req::after { content: " *"; color: var(--danger); font-size: 14px;}
             
-            --accent: #f59e0b; 
-            --success: #10b981; 
-            --danger: #ef4444; 
+            input, textarea, select { width: 100%; padding: 14px 12px; border: 1.5px solid var(--border-line); border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--bg-input); color: var(--text-main); font-family: inherit;}
+            input:focus, textarea:focus, select:focus { border-color: var(--border-focus); outline: none; box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15); background: var(--bg-card);}
             
-            --shadow-sm: 0 1px 3px rgba(30, 58, 138, 0.1); 
-            --shadow-md: 0 4px 6px -1px rgba(30, 58, 138, 0.15); 
-            --shadow-btn: 0 4px 14px 0 rgba(245, 158, 11, 0.3); 
-            --shadow-top: 0 -4px 15px rgba(0,0,0,0.05);
-        }
-        .dark-mode {
-            --bg-body: #0f172a; 
-            --bg-card: #1e293b; 
-            --bg-input: #334155; 
-            --bg-readonly: #1e293b;
-            --bg-section: #334155; 
-            --bg-stepper: #334155; 
+            input.readonly-locked, select.readonly-locked { background: var(--bg-readonly) !important; color: var(--text-sub) !important; cursor: not-allowed; border-style: dashed; pointer-events: none; }
+            input[readonly].clickable { cursor: pointer; background: var(--bg-input); border: 1.5px solid var(--primary); color: var(--primary); text-align: center; font-size: 15px; font-weight: 800;}
+            input[readonly]:not(.clickable):not(.readonly-locked) { background: var(--bg-readonly); font-weight: bold; color: var(--danger); cursor: not-allowed; border-style: dashed; }
             
-            --text-main: #f8fafc; 
-            --text-sub: #94a3b8; 
-            --text-brand: #fbbf24; 
+            .grid-full { display: grid; grid-template-columns: 1fr; gap: 14px; }
+            .grid-half { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+            .shift-container { display: flex; align-items: center; gap: 8px; }
+            .shift-container input[type="time"] { flex: 1; padding: 12px 10px; text-align: center; }
+            .shift-divider { font-weight: 900; color: var(--text-sub); }
+
+            .category-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: var(--bg-section); padding: 6px; border-radius: 8px; border: 1px solid var(--border-line); overflow-x: auto;}
+            .tab-btn { flex: 1; min-width: 80px; padding: 12px; border: none; background: transparent; border-radius: 6px; font-weight: 800; font-size: 12px; color: var(--text-sub); cursor: pointer; transition: all 0.2s; white-space: nowrap;}
+            .tab-btn.active { background: var(--primary); color: white; box-shadow: var(--shadow-sm); }
             
-            --border-line: #475569; 
-            --border-focus: #fbbf24;
+            .btn-add { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; font-size: 13px; letter-spacing: 0.5px; box-shadow: var(--shadow-sm); margin-top: 14px;}
+            .empty-state { text-align: center; padding: 24px 15px; color: var(--text-sub); font-size: 12px; font-weight: bold; border: 2px dashed var(--border-line); border-radius: 8px; background: var(--bg-section);}
             
-            --primary: #3b82f6; 
-            --primary-grad: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            .summary-card { background: var(--bg-section); border: 1px solid var(--border-line); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 10px;}
+            .summary-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-line); padding-bottom: 8px; }
+            .summary-title { font-size: 13px; font-weight: 900; color: var(--primary); display: flex; flex-direction: column;}
+            .summary-subtitle { font-size: 11px; color: var(--text-main); font-weight: 700; margin-top: 3px; letter-spacing: 0.5px;}
+            .btn-del { background: var(--bg-card); color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 900; font-size: 12px;}
+
+            .flex-inputs { display: flex; gap: 12px; width: 100%; }
+            .stepper { display: flex; align-items: center; background: var(--bg-card); border: 1px solid var(--border-line); border-radius: 8px; overflow: hidden; flex: 1; height: 46px;}
+            .stepper button { background: var(--bg-stepper); border: none; width: 50px; height: 100%; font-size: 22px; font-weight: bold; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+            .stepper input { flex: 1; min-width: 0; border: none; text-align: center; font-weight: 900; font-size: 16px; padding: 0; height: 100%; color: var(--text-brand); background: transparent; }
+            .stepper input:focus { box-shadow: none; }
+
+            .fab-container { position: fixed; right: 15px; bottom: 95px; display: flex; flex-direction: column; gap: 12px; z-index: 999; align-items: flex-end; }
+            .fab-sync { background: var(--accent); color: var(--text-brand); border: none; border-radius: 8px; padding: 12px 18px; font-weight: 900; font-size: 11px; display: none; letter-spacing: 0.5px; box-shadow: var(--shadow-md);}
+
+            .action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-top: 1px solid var(--border-line); padding: 12px 15px; padding-bottom: max(12px, env(safe-area-inset-bottom)); box-shadow: var(--shadow-top); z-index: 1000; display: block; }
+            .action-buttons { max-width: 800px; margin: 0 auto; display: flex; gap: 10px; align-items: center;}
+            .btn-menu { background: var(--bg-section); color: var(--text-brand); border: 1px solid var(--border-line); border-radius: 8px; width: 55px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: var(--shadow-sm); }
+            .btn-server { background: var(--primary-grad); box-shadow: var(--shadow-btn); font-size: 14px; flex: 1; padding: 16px 10px; border-radius: 8px; font-weight: 800; cursor: pointer; color: white; border: none; letter-spacing: 0.5px; }
+
+            .sheet-overlay, .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.7); z-index: 3000; align-items: flex-end; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s; }
+            .sheet-overlay.show, .modal-overlay.show { opacity: 1; }
             
-            --accent: #fbbf24; 
-            --shadow-top: 0 -4px 15px rgba(0,0,0,0.4);
-            --shadow-btn: 0 4px 14px 0 rgba(59, 130, 246, 0.3); 
-        }
+            .bottom-sheet { background: var(--bg-card); width: 100%; max-width: 800px; margin: 0 auto; border-radius: 20px 20px 0 0; padding: 20px; padding-bottom: 40px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; gap: 12px; }
+            .sheet-overlay.show .bottom-sheet { transform: translateY(0); }
+            
+            .sheet-handle { width: 40px; height: 5px; background: var(--border-line); border-radius: 5px; margin: 0 auto 15px auto; }
+            .sheet-btn { background: var(--bg-input); border: 1px solid var(--border-line); color: var(--text-brand); padding: 16px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; text-align: center; letter-spacing: 0.5px; transition: background 0.2s; }
+            .sheet-btn:active { background: var(--bg-section); }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+            .modal-overlay { align-items: center; justify-content: center; }
+            .modal-box { background: var(--bg-card); width: 92%; max-width: 400px; border-radius: 12px; padding: 20px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 15px; transform: scale(0.9); transition: transform 0.3s; max-height: 90vh; overflow-y: auto;}
+            .modal-overlay.show .modal-box { transform: scale(1); }
+            .modal-title { font-weight: 900; color: var(--primary); font-size: 16px; text-align: center; border-bottom: 2px solid var(--border-line); padding-bottom: 10px;}
 
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg-body); 
-            margin: 0; font-size: 14px; color: var(--text-main); 
-            transition: background-color 0.3s, color 0.3s; user-select: none; -webkit-user-select: none; 
-        }
-        input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        input[type="number"] { -moz-appearance: textfield; }
+            /* LOADING HARUS LEBIH TINGGI DARI SEMUANYA */
+            #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); color: white; z-index: 9999; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; flex-direction: column; text-align: center; backdrop-filter: blur(4px); letter-spacing: 1px;}
+            .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .header { background: var(--bg-card); border-bottom: 3px solid var(--accent); box-shadow: var(--shadow-md); padding: 16px 15px; position: sticky; top: 0; z-index: 100;}
-        .header-content { display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto; }
-        .title-area { display: flex; flex-direction: column; cursor: pointer; }
-        .main-title { font-weight: 900; color: var(--text-brand); font-size: 1.2rem; letter-spacing: 0.5px; }
-        .sub-title { font-size: 10px; color: var(--text-sub); font-weight: bold; letter-spacing: 1px; margin-top: 4px; }
-        .version-badge { background: var(--accent); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 9px; margin-left: 6px; font-weight: 900;}
-        
-        .theme-toggle-logo { height: 28px; width: 28px; object-fit: contain; cursor: pointer; transition: transform 0.2s ease; background-color: transparent; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center;}
-        .theme-toggle-logo:active { transform: scale(0.85); }
-        
-        .container { padding: 15px; max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 100px;}
-        .card { background: var(--bg-card); border-radius: 12px; padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-line); }
-        
-        .input-group { position: relative; display: flex; flex-direction: column; gap: 6px;}
-        label { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; }
-        .req::after { content: " *"; color: var(--danger); font-size: 14px;}
-        
-        input, textarea, select { width: 100%; padding: 14px 12px; border: 1.5px solid var(--border-line); border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--bg-input); color: var(--text-main); font-family: inherit;}
-        input:focus, textarea:focus, select:focus { border-color: var(--border-focus); outline: none; box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15); background: var(--bg-card);}
-        
-        input.readonly-locked, select.readonly-locked { background: var(--bg-readonly) !important; color: var(--text-sub) !important; cursor: not-allowed; border-style: dashed; pointer-events: none; }
-        input[readonly].clickable { cursor: pointer; background: var(--bg-input); border: 1.5px solid var(--primary); color: var(--primary); text-align: center; font-size: 15px; font-weight: 800;}
-        input[readonly]:not(.clickable):not(.readonly-locked) { background: var(--bg-readonly); font-weight: bold; color: var(--danger); cursor: not-allowed; border-style: dashed; }
-        
-        .grid-full { display: grid; grid-template-columns: 1fr; gap: 14px; }
-        .grid-half { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+            .chart-container { display: flex; align-items: center; justify-content: space-evenly; gap: 15px; background: var(--bg-section); padding: 20px 10px; border-radius: 12px; border: 1px solid var(--border-line); margin-bottom: 20px; }
+            .chart-box { width: 100px; height: 100px; position: relative; flex-shrink: 0;}
+            .chart-details { display: flex; flex-direction: column; gap: 4px; }
+            .chart-title { font-size: 11px; font-weight: 900; color: var(--text-sub); letter-spacing: 1px; }
+            .chart-pct { font-size: 26px; font-weight: 900; color: var(--danger); margin-bottom: 5px;}
+            .chart-legend { font-size: 12px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;}
+            .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block;}
 
-        .shift-container { display: flex; align-items: center; gap: 8px; }
-        .shift-container input[type="time"] { flex: 1; padding: 12px 10px; text-align: center; }
-        .shift-divider { font-weight: 900; color: var(--text-sub); }
+            .line-tags { display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px; padding: 10px; background: var(--bg-input); border-radius: 8px; border: 1px dashed var(--border-line); align-items: center;}
+            .line-tag { background: var(--primary); color: white; padding: 6px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 8px;}
+            .line-tag span { cursor: pointer; color: var(--accent); font-weight: 900; padding: 0 4px; font-size: 15px;}
+            
+            .grid-numbers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+            .num-btn { background: var(--bg-section); border: 1px solid var(--border-line); padding: 14px 0; border-radius: 8px; font-weight: 900; color: var(--text-main); cursor: pointer; font-size: 15px;}
+            .num-btn.selected { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.2); }
+            
+            .grid-suffix { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+            .suf-btn { background: var(--bg-section); border: 1px solid var(--border-line); padding: 14px; border-radius: 8px; font-weight: 900; color: var(--text-main); cursor: pointer; font-size: 14px;}
+            .suf-btn.selected { background: var(--accent); color: var(--text-brand); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2); }
+            
+            .btn-add-line { background: var(--bg-input); color: var(--primary); border: 2px solid var(--primary); padding: 14px; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 1;}
+            .btn-save-line { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 2;}
 
-        .category-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: var(--bg-section); padding: 6px; border-radius: 8px; border: 1px solid var(--border-line); overflow-x: auto;}
-        .tab-btn { flex: 1; min-width: 80px; padding: 12px; border: none; background: transparent; border-radius: 6px; font-weight: 800; font-size: 12px; color: var(--text-sub); cursor: pointer; transition: all 0.2s; white-space: nowrap;}
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: var(--shadow-sm); }
-        
-        .btn-add { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 800; cursor: pointer; width: 100%; font-size: 13px; letter-spacing: 0.5px; box-shadow: var(--shadow-sm); margin-top: 14px;}
-        .empty-state { text-align: center; padding: 24px 15px; color: var(--text-sub); font-size: 12px; font-weight: bold; border: 2px dashed var(--border-line); border-radius: 8px; background: var(--bg-section);}
-        
-        .summary-card { background: var(--bg-section); border: 1px solid var(--border-line); border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 10px;}
-        .summary-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-line); padding-bottom: 8px; }
-        .summary-title { font-size: 13px; font-weight: 900; color: var(--primary); display: flex; flex-direction: column;}
-        .summary-subtitle { font-size: 11px; color: var(--text-main); font-weight: 700; margin-top: 3px; letter-spacing: 0.5px;}
-        .btn-del { background: var(--bg-card); color: var(--danger); border: 1px solid var(--danger); border-radius: 6px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 900; font-size: 12px;}
+            /* CSS KHUSUS TRACKER */
+            .tracker-list { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; border: 1px solid var(--border-line); border-radius: 8px; padding: 8px; background: var(--bg-readonly);}
+            .tracker-item { padding: 12px; background: var(--bg-input); border: 2px solid var(--border-line); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--text-main); display: flex; flex-direction: column; gap: 5px; transition: all 0.2s; }
+            .tracker-item:active { transform: scale(0.98); }
+            .tracker-item.selected { background: var(--primary-grad); color: white; border-color: var(--primary); box-shadow: var(--shadow-md); }
+            .tracker-badge { font-size: 10px; background: var(--accent); color: var(--text-brand); padding: 3px 8px; border-radius: 4px; display: inline-block; width: max-content; font-weight: 900;}
+            .tracker-item.selected .tracker-badge { background: white; color: var(--primary); }
 
-        .flex-inputs { display: flex; gap: 12px; width: 100%; }
-        .stepper { display: flex; align-items: center; background: var(--bg-card); border: 1px solid var(--border-line); border-radius: 8px; overflow: hidden; flex: 1; height: 46px;}
-        .stepper button { background: var(--bg-stepper); border: none; width: 50px; height: 100%; font-size: 22px; font-weight: bold; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .stepper input { flex: 1; min-width: 0; border: none; text-align: center; font-weight: 900; font-size: 16px; padding: 0; height: 100%; color: var(--text-brand); background: transparent; }
-        .stepper input:focus { box-shadow: none; }
+            @media (min-width: 600px) { .grid-half { grid-template-columns: 1fr 1fr; } }
+        </style>
+    </head>
+    <body>
 
-        .fab-container { position: fixed; right: 15px; bottom: 95px; display: flex; flex-direction: column; gap: 12px; z-index: 999; align-items: flex-end; }
-        .fab-sync { background: var(--accent); color: var(--text-brand); border: none; border-radius: 8px; padding: 12px 18px; font-weight: 900; font-size: 11px; display: none; letter-spacing: 0.5px; box-shadow: var(--shadow-md);}
+    <div id="loading"><div class="spinner"></div><div id="loading-text">MEMPROSES...</div></div>
 
-        .action-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-top: 1px solid var(--border-line); padding: 12px 15px; padding-bottom: max(12px, env(safe-area-inset-bottom)); box-shadow: var(--shadow-top); z-index: 1000; display: block; }
-        .action-buttons { max-width: 800px; margin: 0 auto; display: flex; gap: 10px; align-items: center;}
-        .btn-menu { background: var(--bg-section); color: var(--text-brand); border: 1px solid var(--border-line); border-radius: 8px; width: 55px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; box-shadow: var(--shadow-sm); }
-        .btn-server { background: var(--primary-grad); box-shadow: var(--shadow-btn); font-size: 14px; flex: 1; padding: 16px 10px; border-radius: 8px; font-weight: 800; cursor: pointer; color: white; border: none; letter-spacing: 0.5px; }
-
-        .sheet-overlay, .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.7); z-index: 3000; align-items: flex-end; backdrop-filter: blur(3px); opacity: 0; transition: opacity 0.3s; }
-        .sheet-overlay.show, .modal-overlay.show { opacity: 1; }
-        
-        .bottom-sheet { background: var(--bg-card); width: 100%; max-width: 800px; margin: 0 auto; border-radius: 20px 20px 0 0; padding: 20px; padding-bottom: 40px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; gap: 12px; }
-        .sheet-overlay.show .bottom-sheet { transform: translateY(0); }
-        
-        .sheet-handle { width: 40px; height: 5px; background: var(--border-line); border-radius: 5px; margin: 0 auto 15px auto; }
-        .sheet-btn { background: var(--bg-input); border: 1px solid var(--border-line); color: var(--text-brand); padding: 16px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; text-align: center; letter-spacing: 0.5px; transition: background 0.2s; }
-        .sheet-btn:active { background: var(--bg-section); }
-
-        .modal-overlay { align-items: center; justify-content: center; }
-        .modal-box { background: var(--bg-card); width: 92%; max-width: 400px; border-radius: 12px; padding: 20px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 15px; transform: scale(0.9); transition: transform 0.3s; max-height: 90vh; overflow-y: auto;}
-        .modal-overlay.show .modal-box { transform: scale(1); }
-        .modal-title { font-weight: 900; color: var(--primary); font-size: 16px; text-align: center; border-bottom: 2px solid var(--border-line); padding-bottom: 10px;}
-
-        /* LOADING HARUS LEBIH TINGGI DARI SEMUANYA */
-        #loading { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); color: white; z-index: 9999; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; flex-direction: column; text-align: center; backdrop-filter: blur(4px); letter-spacing: 1px;}
-        .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--accent); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .chart-container { display: flex; align-items: center; justify-content: space-evenly; gap: 15px; background: var(--bg-section); padding: 20px 10px; border-radius: 12px; border: 1px solid var(--border-line); margin-bottom: 20px; }
-        .chart-box { width: 100px; height: 100px; position: relative; flex-shrink: 0;}
-        .chart-details { display: flex; flex-direction: column; gap: 4px; }
-        .chart-title { font-size: 11px; font-weight: 900; color: var(--text-sub); letter-spacing: 1px; }
-        .chart-pct { font-size: 26px; font-weight: 900; color: var(--danger); margin-bottom: 5px;}
-        .chart-legend { font-size: 12px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 6px;}
-        .legend-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block;}
-
-        .line-tags { display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px; padding: 10px; background: var(--bg-input); border-radius: 8px; border: 1px dashed var(--border-line); align-items: center;}
-        .line-tag { background: var(--primary); color: white; padding: 6px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 8px;}
-        .line-tag span { cursor: pointer; color: var(--accent); font-weight: 900; padding: 0 4px; font-size: 15px;}
-        
-        .grid-numbers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        .num-btn { background: var(--bg-section); border: 1px solid var(--border-line); padding: 14px 0; border-radius: 8px; font-weight: 900; color: var(--text-main); cursor: pointer; font-size: 15px;}
-        .num-btn.selected { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.2); }
-        
-        .grid-suffix { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
-        .suf-btn { background: var(--bg-section); border: 1px solid var(--border-line); padding: 14px; border-radius: 8px; font-weight: 900; color: var(--text-main); cursor: pointer; font-size: 14px;}
-        .suf-btn.selected { background: var(--accent); color: var(--text-brand); border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2); }
-        
-        .btn-add-line { background: var(--bg-input); color: var(--primary); border: 2px solid var(--primary); padding: 14px; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 1;}
-        .btn-save-line { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 2;}
-
-        /* CSS KHUSUS TRACKER */
-        .tracker-list { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; border: 1px solid var(--border-line); border-radius: 8px; padding: 8px; background: var(--bg-readonly);}
-        .tracker-item { padding: 12px; background: var(--bg-input); border: 2px solid var(--border-line); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--text-main); display: flex; flex-direction: column; gap: 5px; transition: all 0.2s; }
-        .tracker-item:active { transform: scale(0.98); }
-        .tracker-item.selected { background: var(--primary-grad); color: white; border-color: var(--primary); box-shadow: var(--shadow-md); }
-        .tracker-badge { font-size: 10px; background: var(--accent); color: var(--text-brand); padding: 3px 8px; border-radius: 4px; display: inline-block; width: max-content; font-weight: 900;}
-        .tracker-item.selected .tracker-badge { background: white; color: var(--primary); }
-
-        @media (min-width: 600px) { .grid-half { grid-template-columns: 1fr 1fr; } }
-    </style>
-</head>
-<body>
-
-<div id="loading"><div class="spinner"></div><div id="loading-text">MEMPROSES...</div></div>
-
-<div class="header">
-    <div class="header-content">
-        <div class="title-area">
-            <div class="main-title">QC WASHING DASHBOARD</div>
-            <div class="sub-title">QUALITY ENGINEERING USGU DRESS 1 <span class="version-badge" id="verBadge">v1.0</span></div>
-        </div>
-        <div class="theme-toggle-logo" id="themeBtn" onclick="toggleTheme()">
-            <img src="logolight.png" alt="Toggle Theme" style="width: 32px; height: 32px; object-fit: contain;" onerror="this.style.display='none'">
-        </div>
-    </div>
-</div>
-
-<div id="tab-daily" class="container">
-    <div class="card">
-        <div class="grid-half">
-            <div class="input-group">
-                <label class="req">NAMA QC / INSPECTOR:</label>
-                <select id="nama_qc" onchange="saveData()">
-                    <option value="" disabled selected>-- Pilih QC --</option>
-                    <option value="AMELIA">AMELIA</option>
-                    <option value="ANGGRAINI">ANGGRAINI</option>
-                    <option value="DILA CHAIRUNNISA">DILA CHAIRUNNISA</option>
-                    <option value="DINDA">DINDA</option>
-                    <option value="ELSA OLIFIA">ELSA OLIFIA</option>
-                    <option value="ENITA DWI">ENITA DWI</option>
-                    <option value="HAMIDAH PUTRI">HAMIDAH PUTRI</option>
-                    <option value="HAYUN ARISKA">HAYUN ARISKA</option>
-                    <option value="LILI KURNIAWATI">LILI KURNIAWATI</option>
-                    <option value="MIA SAELANI">MIA SAELANI</option>
-                    <option value="NADIFA">NADIFA</option>
-                    <option value="NANDA SALWA">NANDA SALWA</option>
-                    <option value="ROSSI BERLIANA">ROSSI BERLIANA</option>
-                    <option value="ZILFI NAILIS">ZILFI NAILIS</option>
-                </select>
+    <div class="header">
+        <div class="header-content">
+            <div class="title-area">
+                <div class="main-title">QC WASHING DASHBOARD</div>
+                <div class="sub-title">QUALITY ENGINEERING USGU DRESS 1 <span class="version-badge" id="verBadge">v1.0</span></div>
             </div>
-            <div class="input-group"><label class="req">TANGGAL:</label><input type="date" id="tanggal" onchange="saveData()"></div>
-        </div>
-
-        <div class="grid-half" style="margin-top: 14px;">
-            <div class="input-group" style="grid-column: 1 / -1;">
-                <label class="req">STEP PROSES:</label>
-                <select id="step" onchange="saveData()">
-                    <option value="" disabled selected>-- Pilih Step Proses --</option>
-                    <option value="CHECK RANDOM 10%">CHECK RANDOM 10%</option>
-                    <option value="BULK">BULK</option>
-                    <option value="REPAIR SEWING">REPAIR SEWING (RAR)</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="grid-half" style="margin-top: 14px;">
-            <div class="input-group">
-                <label class="req">RUN IN LINE:</label>
-                <input type="text" id="line_name" class="clickable" readonly onclick="openLineModal()">
-            </div>
-            <div class="input-group">
-                <label class="req">ORDER / BUYER:</label>
-                <select id="buyer" onchange="updateDropdowns('buyer'); fetchStaticData(); saveData()">
-                    <option value="" disabled selected>-- Pilih Buyer --</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="grid-half" style="margin-top: 14px;">
-            <div class="input-group">
-                <label class="req">STYLE:</label>
-                <select id="style" onchange="updateDropdowns('style'); fetchStaticData(); saveData()">
-                    <option value="" disabled selected>-- Pilih Style --</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label class="req">COLOR:</label>
-                <select id="color" onchange="fetchStaticData(); saveData()">
-                    <option value="" disabled selected>-- Pilih Color --</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="grid-half" style="margin-top: 14px;">
-            <div class="input-group">
-                <label>QTY ORDER:</label>
-                <input type="number" id="qty_order" oninput="formatAntiMinus(this); saveData()">
-            </div>
-            <div class="input-group">
-                <label>DELIVER:</label>
-                <input type="date" id="deliver" onchange="saveData()">
-            </div>
-        </div>
-
-        <div class="grid-half" style="margin-top: 14px;">
-            <div class="input-group">
-                <label>QTY SEND:</label>
-                <input type="number" id="qty_send" oninput="formatAntiMinus(this); saveData()">
-            </div>
-            <div class="input-group">
-                <label>QTY RECEIVE:</label>
-                <input type="number" id="qty_receive" oninput="formatAntiMinus(this); saveData()">
-            </div>
-        </div>
-
-        <div class="grid-full" style="margin-top: 14px;">
-            <label style="border-bottom: 2px solid var(--border-line); padding-bottom: 8px; font-size: 11px; color: var(--text-main); font-weight: 800;">TANGGAL / FIRST OUTPUT DATE:</label>
-        </div>
-        
-        <div class="grid-half" style="margin-top: 6px;">
-            <div class="input-group">
-                <label>FROM SEWING:</label>
-                <input type="date" id="from_sewing" onchange="saveData()">
-            </div>
-            <div class="input-group">
-                <label>SEND WASHING:</label>
-                <input type="date" id="send_washing" onchange="saveData()">
-            </div>
-            <div class="input-group" style="grid-column: 1 / -1;">
-                <label>RECEIVED WASHING:</label>
-                <input type="date" id="received_washing" onchange="saveData()">
-            </div>
-        </div>
-
-        <div class="grid-full" style="margin-top: 14px;">
-            <div class="input-group">
-                <label class="req">SHIFT: <span id="shift_hours" style="color:var(--primary); font-weight:900;"></span></label>
-                <div class="shift-container">
-                    <input type="time" id="shift_start" oninput="calculateShiftHours(); saveData()">
-                    <span class="shift-divider">-</span>
-                    <input type="time" id="shift_end" oninput="calculateShiftHours(); saveData()">
-                </div>
+            <div class="theme-toggle-logo" id="themeBtn" onclick="toggleTheme()">
+                <img src="logolight.png" alt="Toggle Theme" style="width: 32px; height: 32px; object-fit: contain;" onerror="this.style.display='none'">
             </div>
         </div>
     </div>
 
-    <div class="card" id="add-defect-section">
-        <label style="border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 15px; font-size: 12px; color: var(--primary); font-weight: 800; display: block;">TAMBAH DEFECT BARU:</label>
-        
-        <div class="category-tabs">
-            <button class="tab-btn" id="tab_sewing" onclick="switchCategory('SEWING')">SEWING</button>
-            <button class="tab-btn" id="tab_finishing" onclick="switchCategory('FINISHING')">FINISHING</button>
-            <button class="tab-btn active" id="tab_washing" onclick="switchCategory('WASHING')">WASHING</button>
-        </div>
-
-        <div class="grid-half" id="defect_input_container">
-            <div class="input-group" id="area_container">
-                <label>1. PILIH AREA / PROSES:</label>
-                <select id="sel_area" onchange="populateType()">
-                    <option value="" disabled selected>-- Pilih Area --</option>
-                </select>
-            </div>
-            <div class="input-group" id="type_container" style="display: none;">
-                <label>2. PILIH JENIS DEFECT:</label>
-                <select id="sel_type">
-                    <option value="" disabled selected>-- Pilih Jenis --</option>
-                </select>
-            </div>
-        </div>
-        
-        <button class="btn-add" onclick="addDefectToList()">TAMBAHKAN DEFECT</button>
-    </div>
-
-    <div class="card" id="summary-section">
-        <label style="border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 15px; font-size: 12px; color: var(--accent); font-weight: 800; display: block;">DAFTAR RANGKUMAN DEFECT:</label>
-        <div id="active_defects_container">
-            <div class="empty-state" id="empty_state">
-                BELUM ADA DEFECT YANG DITAMBAHKAN.<br>
-                <span style="font-weight:normal; font-size:11px; display:block; margin-top:6px;">Silakan pilih Area &amp; Jenis di atas lalu klik Tambahkan.</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="card" id="kalkulasi-section">
-        <label style="border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 15px; font-size: 12px; color: var(--primary); font-weight: 800; display: block;">KALKULASI (OTOMATIS &amp; MANUAL):</label>
-        
-        <div class="chart-container">
-            <div class="chart-box">
-                <canvas id="defectChart"></canvas>
-            </div>
-            <div class="chart-details">
-                <div class="chart-title">DEFECT RATE</div>
-                <div class="chart-pct" id="chart_pct">0%</div>
-                <div class="chart-legend"><span class="legend-dot" style="background:var(--success);"></span> GOOD : <span id="chart_good">0 (0%)</span></div>
-                <div class="chart-legend"><span class="legend-dot" style="background:var(--danger);"></span> DEFECT : <span id="chart_def">0</span></div>
-            </div>
-        </div>
-
-        <div class="grid-full">
-            <div class="input-group">
-                <label class="req" style="color:var(--success);">QTY GOOD QC (TOTAL LULUS):</label>
-                <input type="number" id="qty_good" oninput="formatAntiMinus(this); calculate()" style="text-align: center; font-size: 16px; padding: 16px; color: var(--success); font-weight: 900;">
-            </div>
-            <input type="hidden" id="tot_def" value="0">
-            <input type="hidden" id="qty_insp" value="0">
-            <input type="hidden" id="pct_def" value="0%">
-        </div>
-    </div>
-</div>
-
-<div class="fab-container">
-    <button class="fab-sync" id="btnSync" onclick="pushOfflineData()">SINKRON (0)</button>
-</div>
-
-<div class="action-bar" id="bottomActionBar">
-    <div class="action-buttons">
-        <button class="btn-menu" onclick="openActionSheet()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="5" r="2"></circle>
-                <circle cx="12" cy="12" r="2"></circle>
-                <circle cx="12" cy="19" r="2"></circle>
-            </svg>
-        </button>
-        <button class="btn-server" id="btnSubmitMain" onclick="showSummaryAndSubmit()">CONFIRM &amp; SUBMIT</button>
-    </div>
-</div>
-
-<div id="actionSheet" class="sheet-overlay" onclick="closeActionSheet(event)">
-    <div class="bottom-sheet" onclick="event.stopPropagation()">
-        <div class="sheet-handle"></div>
-        <button class="sheet-btn" style="color: var(--primary);" onclick="openTutupShiftModal()">TUTUP SHIFT &amp; EVALUASI (SPV)</button>
-        <button class="sheet-btn" style="color: var(--success);" onclick="openGenBuyerModal()">GENERATE SUMMARY BUYER (SPV)</button>
-        <button class="sheet-btn" onclick="runAction(resetForm)">RESET FORMULIR</button>
-        <button class="sheet-btn" onclick="runAction(exportToExcel)">DOWNLOAD EXCEL</button>
-    </div>
-</div>
-
-<div id="tutupShiftModal" class="modal-overlay" onclick="closeTutupShiftModal(event)">
-    <div class="modal-box" onclick="event.stopPropagation()">
-        <div class="modal-title" style="color: var(--primary);">TUTUP SHIFT &amp; EVALUASI</div>
-        
-        <div id="ts_step1">
-            <div class="input-group">
-                <label class="req">PASSWORD SPV:</label>
-                <input type="password" id="ts_pass">
-            </div>
-            <div class="grid-half" style="margin-top: 15px;">
-                <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger);" onclick="closeTutupShiftModal()">BATAL</button>
-                <button class="btn-save-line" style="background:var(--primary); border-color:var(--primary);" onclick="verifyTSPass()">LANJUT</button>
-            </div>
-        </div>
-
-        <div id="ts_step2" style="display:none;">
+    <div id="tab-daily" class="container">
+        <div class="card">
             <div class="grid-half">
                 <div class="input-group">
-                    <label>HANDFEEL:</label>
-                    <input type="text" id="ts_handfeel">
+                    <label class="req">NAMA QC / INSPECTOR:</label>
+                    <select id="nama_qc" onchange="saveData()">
+                        <option value="" disabled selected>-- Pilih QC --</option>
+                        <option value="AMELIA">AMELIA</option>
+                        <option value="ANGGRAINI">ANGGRAINI</option>
+                        <option value="DILA CHAIRUNNISA">DILA CHAIRUNNISA</option>
+                        <option value="DINDA">DINDA</option>
+                        <option value="ELSA OLIFIA">ELSA OLIFIA</option>
+                        <option value="ENITA DWI">ENITA DWI</option>
+                        <option value="HAMIDAH PUTRI">HAMIDAH PUTRI</option>
+                        <option value="HAYUN ARISKA">HAYUN ARISKA</option>
+                        <option value="LILI KURNIAWATI">LILI KURNIAWATI</option>
+                        <option value="MIA SAELANI">MIA SAELANI</option>
+                        <option value="NADIFA">NADIFA</option>
+                        <option value="NANDA SALWA">NANDA SALWA</option>
+                        <option value="ROSSI BERLIANA">ROSSI BERLIANA</option>
+                        <option value="ZILFI NAILIS">ZILFI NAILIS</option>
+                    </select>
+                </div>
+                <div class="input-group"><label class="req">TANGGAL:</label><input type="date" id="tanggal" onchange="saveData()"></div>
+            </div>
+
+            <div class="grid-half" style="margin-top: 14px;">
+                <div class="input-group" style="grid-column: 1 / -1;">
+                    <label class="req">STEP PROSES:</label>
+                    <select id="step" onchange="saveData()">
+                        <option value="" disabled selected>-- Pilih Step Proses --</option>
+                        <option value="CHECK RANDOM 10%">CHECK RANDOM 10%</option>
+                        <option value="BULK">BULK</option>
+                        <option value="REPAIR SEWING">REPAIR SEWING (RAR)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid-half" style="margin-top: 14px;">
+                <div class="input-group">
+                    <label class="req">RUN IN LINE:</label>
+                    <input type="text" id="line_name" class="clickable" readonly onclick="openLineModal()">
                 </div>
                 <div class="input-group">
-                    <label>COLOR EVALUATION:</label>
-                    <input type="text" id="ts_color">
+                    <label class="req">ORDER / BUYER:</label>
+                    <select id="buyer" onchange="updateDropdowns('buyer'); fetchStaticData(); saveData()">
+                        <option value="" disabled selected>-- Pilih Buyer --</option>
+                    </select>
                 </div>
             </div>
-            <div class="input-group" style="margin-top: 10px;">
-                <label>RESULT WASHING:</label>
-                <input type="text" id="ts_result">
-            </div>
-            <div class="grid-half" style="margin-top: 15px;">
-                <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger);" onclick="closeTutupShiftModal()">BATAL</button>
-                <button class="btn-save-line" style="background:var(--primary); border-color:var(--primary);" onclick="executeRecapSPV()">TUTUP SHIFT</button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div id="summaryBuyerModal" class="modal-overlay" onclick="closeGenBuyerModal(event)">
-    <div class="modal-box" onclick="event.stopPropagation()">
-        <div class="modal-title" style="color: var(--success);">GENERATE SUMMARY BUYER</div>
-        
-        <div id="gen_step1">
-            <div class="input-group">
-                <label class="req">PASSWORD SPV:</label>
-                <input type="password" id="gen_pass">
-            </div>
-            <div class="grid-half" style="margin-top: 15px;">
-                <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger);" onclick="closeGenBuyerModal()">BATAL</button>
-                <button class="btn-save-line" style="background:var(--success); border-color:var(--success);" onclick="verifyGenPass()">LANJUT</button>
-            </div>
-        </div>
-
-        <div id="gen_step2" style="display:none;">
-            <label style="font-size: 11px; font-weight: 800; color: var(--text-sub); margin-bottom: 6px; display: block;" class="req">1. PILIH DATA TRACKER (KLIK):</label>
-            <div class="tracker-list" id="tracker_list">
+            <div class="grid-half" style="margin-top: 14px;">
+                <div class="input-group">
+                    <label class="req">STYLE:</label>
+                    <select id="style" onchange="updateDropdowns('style'); fetchStaticData(); saveData()">
+                        <option value="" disabled selected>-- Pilih Style --</option>
+                    </select>
                 </div>
-
-            <div class="input-group">
-                <label class="req">2. NAMA SUPPLIER (WASHING):</label>
-                <input type="text" id="gen_supplier">
+                <div class="input-group">
+                    <label class="req">COLOR:</label>
+                    <select id="color" onchange="fetchStaticData(); saveData()">
+                        <option value="" disabled selected>-- Pilih Color --</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="input-group" style="margin-top: 10px;">
-                <label class="req">3. TANGGAL SHIPMENT:</label>
-                <input type="date" id="gen_shipment">
+            <div class="grid-half" style="margin-top: 14px;">
+                <div class="input-group">
+                    <label>QTY ORDER:</label>
+                    <input type="number" id="qty_order" oninput="formatAntiMinus(this); saveData()">
+                </div>
+                <div class="input-group">
+                    <label>DELIVER:</label>
+                    <input type="date" id="deliver" onchange="saveData()">
+                </div>
+            </div>
+
+            <div class="grid-half" style="margin-top: 14px;">
+                <div class="input-group">
+                    <label>QTY SEND:</label>
+                    <input type="number" id="qty_send" oninput="formatAntiMinus(this); saveData()">
+                </div>
+                <div class="input-group">
+                    <label>QTY RECEIVE:</label>
+                    <input type="number" id="qty_receive" oninput="formatAntiMinus(this); saveData()">
+                </div>
+            </div>
+
+            <div class="grid-full" style="margin-top: 14px;">
+                <label style="border-bottom: 2px solid var(--border-line); padding-bottom: 8px; font-size: 11px; color: var(--text-main); font-weight: 800;">TANGGAL / FIRST OUTPUT DATE:</label>
             </div>
             
-            <div class="grid-half" style="margin-top: 15px;">
-                <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger);" onclick="closeGenBuyerModal()">BATAL</button>
-                <button class="btn-save-line" style="background:var(--success); border-color:var(--success);" onclick="executeGenerateSummaryBuyer()">GENERATE</button>
+            <div class="grid-half" style="margin-top: 6px;">
+                <div class="input-group">
+                    <label>FROM SEWING:</label>
+                    <input type="date" id="from_sewing" onchange="saveData()">
+                </div>
+                <div class="input-group">
+                    <label>SEND WASHING:</label>
+                    <input type="date" id="send_washing" onchange="saveData()">
+                </div>
+                <div class="input-group" style="grid-column: 1 / -1;">
+                    <label>RECEIVED WASHING:</label>
+                    <input type="date" id="received_washing" onchange="saveData()">
+                </div>
+            </div>
+
+            <div class="grid-full" style="margin-top: 14px;">
+                <div class="input-group">
+                    <label class="req">SHIFT: <span id="shift_hours" style="color:var(--primary); font-weight:900;"></span></label>
+                    <div class="shift-container">
+                        <input type="time" id="shift_start" oninput="calculateShiftHours(); saveData()">
+                        <span class="shift-divider">-</span>
+                        <input type="time" id="shift_end" oninput="calculateShiftHours(); saveData()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="add-defect-section">
+            <label style="border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 15px; font-size: 12px; color: var(--primary); font-weight: 800; display: block;">TAMBAH DEFECT BARU:</label>
+            
+            <div class="category-tabs">
+                <button class="tab-btn" id="tab_sewing" onclick="switchCategory('SEWING')">SEWING</button>
+                <button class="tab-btn" id="tab_finishing" onclick="switchCategory('FINISHING')">FINISHING</button>
+                <button class="tab-btn active" id="tab_washing" onclick="switchCategory('WASHING')">WASHING</button>
+            </div>
+
+            <div class="grid-half" id="defect_input_container">
+                <div class="input-group" id="area_container">
+                    <label>1. PILIH AREA / PROSES:</label>
+                    <select id="sel_area" onchange="populateType()">
+                        <option value="" disabled selected>-- Pilih Area --</option>
+                    </select>
+                </div>
+                <div class="input-group" id="type_container" style="display: none;">
+                    <label>2. PILIH JENIS DEFECT:</label>
+                    <select id="sel_type">
+                        <option value="" disabled selected>-- Pilih Jenis --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="btn-add" onclick="addDefectToList()">TAMBAHKAN DEFECT</button>
+        </div>
+
+        <div class="card" id="summary-section">
+            <label style="border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 15px; font-size: 12px; color: var(--accent); font-weight: 800; display: block;">DAFTAR RANGKUMAN DEFECT:</label>
+            <div id="active_defects_container">
+                <div class="empty-state" id="empty_state">
+                    BELUM ADA DEFECT YANG DITAMBAHKAN.<br>
+                    <span style="font-weight:normal; font-size:11px; display:block; margin-top:6px;">Silakan pilih Area &amp; Jenis di atas lalu klik Tambahkan.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="kalkulasi-section">
+            <label style="border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 15px; font-size: 12px; color: var(--primary); font-weight: 800; display: block;">KALKULASI (OTOMATIS &amp; MANUAL):</label>
+            
+            <div class="chart-container">
+                <div class="chart-box">
+                    <canvas id="defectChart"></canvas>
+                </div>
+                <div class="chart-details">
+                    <div class="chart-title">DEFECT RATE</div>
+                    <div class="chart-pct" id="chart_pct">0%</div>
+                    <div class="chart-legend"><span class="legend-dot" style="background:var(--success);"></span> GOOD : <span id="chart_good">0 (0%)</span></div>
+                    <div class="chart-legend"><span class="legend-dot" style="background:var(--danger);"></span> DEFECT : <span id="chart_def">0</span></div>
+                </div>
+            </div>
+
+            <div class="grid-full">
+                <div class="input-group">
+                    <label class="req" style="color:var(--success);">QTY GOOD QC (TOTAL LULUS):</label>
+                    <input type="number" id="qty_good" oninput="formatAntiMinus(this); calculate()" style="text-align: center; font-size: 16px; padding: 16px; color: var(--success); font-weight: 900;">
+                </div>
+                <input type="hidden" id="tot_def" value="0">
+                <input type="hidden" id="qty_insp" value="0">
+                <input type="hidden" id="pct_def" value="0%">
             </div>
         </div>
     </div>
-</div>
 
-<div id="lineModal" class="modal-overlay" onclick="closeLineModal(event)">
-    <div class="modal-box" onclick="event.stopPropagation()">
-        <div class="modal-title">PILIH NAMA LINE</div>
-        <div class="line-tags" id="lineTags"></div>
-        <label style="margin-top:5px;">1. PILIH ANGKA:</label>
-        <div class="grid-numbers" id="gridNumbers"></div>
-        <label style="margin-top:10px;">2. TAMBAHAN HURUF (JIKA ADA):</label>
-        <div class="grid-suffix" id="gridSuffix"></div>
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn-add-line" onclick="addLineToTag()">+ TAMBAH</button>
-            <button class="btn-save-line" onclick="closeLineModal()">SIMPAN &amp; TUTUP</button>
+    <div class="fab-container">
+        <button class="fab-sync" id="btnSync" onclick="pushOfflineData()">SINKRON (0)</button>
+    </div>
+
+    <div class="action-bar" id="bottomActionBar">
+        <div class="action-buttons">
+            <button class="btn-menu" onclick="openActionSheet()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="5" r="2"></circle>
+                    <circle cx="12" cy="12" r="2"></circle>
+                    <circle cx="12" cy="19" r="2"></circle>
+                </svg>
+            </button>
+            <button class="btn-server" id="btnSubmitMain" onclick="showSummaryAndSubmit()">CONFIRM &amp; SUBMIT</button>
         </div>
     </div>
-</div>
 
-<script>
-    document.addEventListener('contextmenu', event => event.preventDefault());
+    <div id="actionSheet" class="sheet-overlay" onclick="closeActionSheet(event)">
+        <div class="bottom-sheet" onclick="event.stopPropagation()">
+            <div class="sheet-handle"></div>
+            <button class="sheet-btn" style="color: var(--primary);" onclick="openTutupShiftModal()">TUTUP SHIFT &amp; EVALUASI (SPV)</button>
+            <button class="sheet-btn" style="color: var(--success);" onclick="openGenBuyerModal()">GENERATE SUMMARY BUYER (SPV)</button>
+            <button class="sheet-btn" onclick="runAction(resetForm)">RESET FORMULIR</button>
+            <button class="sheet-btn" onclick="runAction(exportToExcel)">DOWNLOAD EXCEL</button>
+        </div>
+    </div>
 
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuOY8WNXD384d5LgEi6eaxpNGMWh5zAMXQtzeUY5Ef838jG7uAVl2pDePHKfNZQ14S/exec";
-    const APP_VERSION = "1.0";
+    <div id="tutupShiftModal" class="modal-overlay" onclick="closeTutupShiftModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title" style="color: var(--primary);">TUTUP SHIFT &amp; EVALUASI</div>
+            
+            <div id="ts_step1">
+                <div class="input-group">
+                    <label class="req">PASSWORD SPV:</label>
+                    <input type="password" id="ts_pass">
+                </div>
+                <div class="grid-half" style="margin-top: 15px;">
+                    <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger);" onclick="closeTutupShiftModal()">BATAL</button>
+                    <button class="btn-save-line" style="background:var(--primary); border-color:var(--primary);" onclick="verifyTSPass()">LANJUT</button>
+                </div>
+            </div>
 
-    let defectChart;
+            <div id="ts_step2" style="display:none;">
+                <div class="grid-half">
+                    <div class="input-group">
+                        <label>HANDFEEL:</label>
+                        <input type="text" id="ts_handfeel">
+                    </div>
+                    <div class="input-group">
+                        <label>COLOR EVALUATION:</label>
+                        <input type="text" id="ts_color">
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label>RESULT WASHING:</label>
+                    <input type="text" id="ts_result">
+                </div>
+                <div class="grid-half" style="margin-top: 15px;">
+                    <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger);" onclick="closeTutupShiftModal()">BATAL</button>
+                    <button class="btn-save-line" style="background:var(--primary); border-color:var(--primary);" onclick="executeRecapSPV()">TUTUP SHIFT</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // =============================================
-    // ACTION SHEET
-    // =============================================
-    function openActionSheet() {
-        const sheet = document.getElementById('actionSheet');
-        sheet.style.display = 'flex';
-        setTimeout(() => sheet.classList.add('show'), 10);
-    }
+    <div id="summaryBuyerModal" class="modal-overlay" onclick="closeGenBuyerModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title" style="color: var(--success);">GENERATE SUMMARY BUYER</div>
+            
+            <div id="gen_step1">
+                <div class="input-group">
+                    <label class="req">PASSWORD SPV:</label>
+                    <input type="password" id="gen_pass">
+                </div>
+                <div class="grid-half" style="margin-top: 15px;">
+                    <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger);" onclick="closeGenBuyerModal()">BATAL</button>
+                    <button class="btn-save-line" style="background:var(--success); border-color:var(--success);" onclick="verifyGenPass()">LANJUT</button>
+                </div>
+            </div>
 
-    function closeActionSheet(e) {
-        if (e && e.target !== e.currentTarget) return;
-        const sheet = document.getElementById('actionSheet');
-        sheet.classList.remove('show');
-        setTimeout(() => sheet.style.display = 'none', 300);
-    }
+            <div id="gen_step2" style="display:none;">
+                <label style="font-size: 11px; font-weight: 800; color: var(--text-sub); margin-bottom: 6px; display: block;" class="req">1. PILIH DATA TRACKER (KLIK):</label>
+                <div class="tracker-list" id="tracker_list">
+                    </div>
 
-    function runAction(func) {
-        closeActionSheet();
-        setTimeout(func, 300);
-    }
+                <div class="input-group">
+                    <label class="req">2. NAMA SUPPLIER:</label>
+                    <input type="text" id="gen_supplier">
+                </div>
 
-    // =============================================
-    // MODAL TUTUP SHIFT
-    // =============================================
-    function openTutupShiftModal() {
-        closeActionSheet();
-        setTimeout(() => {
+                <div class="input-group" style="margin-top: 10px;">
+                    <label class="req">3. TANGGAL SHIPMENT:</label>
+                    <input type="date" id="gen_shipment">
+                </div>
+                
+                <div class="grid-half" style="margin-top: 15px;">
+                    <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger);" onclick="closeGenBuyerModal()">BATAL</button>
+                    <button class="btn-save-line" style="background:var(--success); border-color:var(--success);" onclick="executeGenerateSummaryBuyer()">GENERATE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="lineModal" class="modal-overlay" onclick="closeLineModal(event)">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-title">PILIH NAMA LINE</div>
+            <div class="line-tags" id="lineTags"></div>
+            <label style="margin-top:5px;">1. PILIH ANGKA:</label>
+            <div class="grid-numbers" id="gridNumbers"></div>
+            <label style="margin-top:10px;">2. TAMBAHAN HURUF (JIKA ADA):</label>
+            <div class="grid-suffix" id="gridSuffix"></div>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-add-line" onclick="addLineToTag()">+ TAMBAH</button>
+                <button class="btn-save-line" onclick="closeLineModal()">SIMPAN &amp; TUTUP</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuOY8WNXD384d5LgEi6eaxpNGMWh5zAMXQtzeUY5Ef838jG7uAVl2pDePHKfNZQ14S/exec";
+        const APP_VERSION = "1.0";
+
+        let defectChart;
+
+        // =============================================
+        // ACTION SHEET
+        // =============================================
+        function openActionSheet() {
+            const sheet = document.getElementById('actionSheet');
+            sheet.style.display = 'flex';
+            setTimeout(() => sheet.classList.add('show'), 10);
+        }
+
+        function closeActionSheet(e) {
+            if (e && e.target !== e.currentTarget) return;
+            const sheet = document.getElementById('actionSheet');
+            sheet.classList.remove('show');
+            setTimeout(() => sheet.style.display = 'none', 300);
+        }
+
+        function runAction(func) {
+            closeActionSheet();
+            setTimeout(func, 300);
+        }
+
+        // =============================================
+        // MODAL TUTUP SHIFT
+        // =============================================
+        function openTutupShiftModal() {
+            closeActionSheet();
+            setTimeout(() => {
+                const modal = document.getElementById('tutupShiftModal');
+                document.getElementById('ts_step1').style.display = 'block';
+                document.getElementById('ts_step2').style.display = 'none';
+                document.getElementById('ts_pass').value = '';
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('show'), 10);
+            }, 300);
+        }
+
+        function closeTutupShiftModal(e) {
+            if (e && e.target !== e.currentTarget) return;
             const modal = document.getElementById('tutupShiftModal');
-            document.getElementById('ts_step1').style.display = 'block';
-            document.getElementById('ts_step2').style.display = 'none';
-            document.getElementById('ts_pass').value = '';
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('show'), 10);
-        }, 300);
-    }
-
-    function closeTutupShiftModal(e) {
-        if (e && e.target !== e.currentTarget) return;
-        const modal = document.getElementById('tutupShiftModal');
-        modal.classList.remove('show');
-        setTimeout(() => modal.style.display = 'none', 300);
-        ['ts_pass', 'ts_handfeel', 'ts_color', 'ts_result'].forEach(id => {
-            document.getElementById(id).value = "";
-        });
-    }
-
-    function verifyTSPass() {
-        const pass = document.getElementById('ts_pass').value;
-        if (pass === 'WASHD1') {
-            document.getElementById('ts_step1').style.display = 'none';
-            document.getElementById('ts_step2').style.display = 'block';
-        } else {
-            Swal.fire('Akses Ditolak', 'Password SPV Salah!', 'error');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+            ['ts_pass', 'ts_handfeel', 'ts_color', 'ts_result'].forEach(id => {
+                document.getElementById(id).value = "";
+            });
         }
-    }
 
-    function executeRecapSPV() {
-        const handfeel    = document.getElementById('ts_handfeel').value.trim();
-        const color_eval  = document.getElementById('ts_color').value.trim();
-        const result_wash = document.getElementById('ts_result').value.trim();
-        const tanggal     = document.getElementById('tanggal').value;
-
-        const reqDay = tanggal ? tanggal.split('-')[2] : "";
-
-        document.getElementById('loading').style.display = 'flex';
-        document.getElementById('loading-text').innerText = "MENUTUP SHIFT...";
-
-        const payload = {
-            action:      "recap",
-            password:    "WASHD1",
-            fullDate:    tanggal,
-            reqDay:      reqDay,
-            handfeel:    handfeel,
-            color_eval:  color_eval,
-            result_wash: result_wash
-        };
-
-        // TIMEOUT 60 DETIK
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            signal: controller.signal
-        })
-        .then(res => {
-            clearTimeout(timeoutId);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.text();
-        })
-        .then(text => {
-            document.getElementById('loading').style.display = 'none';
-            try {
-                const data = JSON.parse(text);
-                closeTutupShiftModal();
-                if (data.result === "success") {
-                    Swal.fire('✅ Sukses', 'Shift berhasil ditutup! Dashboard baru sudah disiapkan.', 'success');
-                } else {
-                    Swal.fire('❌ Gagal', data.error || 'Terjadi kesalahan di server.', 'error');
-                }
-            } catch (e) {
-                closeTutupShiftModal();
-                Swal.fire('⏱️ Timeout', 'Server merespons terlalu lama. Coba lagi atau refresh halaman.', 'error');
-            }
-        })
-        .catch((error) => {
-            clearTimeout(timeoutId);
-            document.getElementById('loading').style.display = 'none';
-            if (error.name === 'AbortError') {
-                Swal.fire('⏱️ Timeout', 'Proses lebih dari 60 detik. Cek Apps Script deployment.', 'error');
+        function verifyTSPass() {
+            const pass = document.getElementById('ts_pass').value;
+            if (pass === 'WASHD1') {
+                document.getElementById('ts_step1').style.display = 'none';
+                document.getElementById('ts_step2').style.display = 'block';
             } else {
-                Swal.fire('❌ Koneksi Gagal', 'Error: ' + error.message, 'error');
+                Swal.fire('Akses Ditolak', 'Password SPV Salah!', 'error');
             }
-        });
-    }
-
-    // =============================================
-    // MODAL GENERATE SUMMARY BUYER & TRACKER
-    // =============================================
-    let selectedTrackerData = null;
-
-    function openGenBuyerModal() {
-        closeActionSheet();
-        setTimeout(() => {
-            const modal = document.getElementById('summaryBuyerModal');
-            document.getElementById('gen_step1').style.display = 'block';
-            document.getElementById('gen_step2').style.display = 'none';
-            document.getElementById('gen_pass').value = '';
-            
-            // Reset state
-            selectedTrackerData = null;
-            document.getElementById('tracker_list').innerHTML = '';
-            
-            modal.style.display = 'flex';
-            setTimeout(() => modal.classList.add('show'), 10);
-        }, 300);
-    }
-
-    function closeGenBuyerModal(e) {
-        if (e && e.target !== e.currentTarget) return;
-        const modal = document.getElementById('summaryBuyerModal');
-        modal.classList.remove('show');
-        setTimeout(() => modal.style.display = 'none', 300);
-        ['gen_pass', 'gen_supplier', 'gen_shipment'].forEach(id => {
-            document.getElementById(id).value = "";
-        });
-        selectedTrackerData = null;
-    }
-
-    function verifyGenPass() {
-        const pass = document.getElementById('gen_pass').value;
-        if (pass === 'WASHD1') {
-            document.getElementById('gen_step1').style.display = 'none';
-            fetchTrackerData(); // Panggil fungsi ambil data Tracker
-        } else {
-            Swal.fire('Akses Ditolak', 'Password SPV Salah!', 'error');
         }
-    }
 
-    function fetchTrackerData() {
-        document.getElementById('loading').style.display = 'flex';
-        document.getElementById('loading-text').innerText = "MEMUAT DATA TRACKER...";
+        function executeRecapSPV() {
+            const handfeel    = document.getElementById('ts_handfeel').value.trim();
+            const color_eval  = document.getElementById('ts_color').value.trim();
+            const result_wash = document.getElementById('ts_result').value.trim();
+            const tanggal     = document.getElementById('tanggal').value;
 
-        // TIMEOUT 30 DETIK
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+            const reqDay = tanggal ? tanggal.split('-')[2] : "";
 
-        // Request ke Apps Script untuk mengambil data dari D_DEFECT
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "get_tracker", password: "WASHD1" }),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            signal: controller.signal
-        })
-        .then(res => {
-            clearTimeout(timeoutId);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            return res.text();
-        })
-        .then(text => {
-            document.getElementById('loading').style.display = 'none';
-            try {
-                const data = JSON.parse(text);
-                if (data.result === "success" && data.tracker_data) {
-                    renderTrackerList(data.tracker_data);
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "MENUTUP SHIFT...";
+
+            const payload = {
+                action:      "recap",
+                password:    "WASHD1",
+                fullDate:    tanggal,
+                reqDay:      reqDay,
+                handfeel:    handfeel,
+                color_eval:  color_eval,
+                result_wash: result_wash
+            };
+
+            // TIMEOUT 60 DETIK
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                signal: controller.signal
+            })
+            .then(res => {
+                clearTimeout(timeoutId);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.text();
+            })
+            .then(text => {
+                document.getElementById('loading').style.display = 'none';
+                try {
+                    const data = JSON.parse(text);
+                    closeTutupShiftModal();
+                    if (data.result === "success") {
+                        Swal.fire('✅ Sukses', 'Shift berhasil ditutup! Dashboard baru sudah disiapkan.', 'success');
+                    } else {
+                        Swal.fire('❌ Gagal', data.error || 'Terjadi kesalahan di server.', 'error');
+                    }
+                } catch (e) {
+                    closeTutupShiftModal();
+                    Swal.fire('⏱️ Timeout', 'Server merespons terlalu lama. Coba lagi atau refresh halaman.', 'error');
+                }
+            })
+            .catch((error) => {
+                clearTimeout(timeoutId);
+                document.getElementById('loading').style.display = 'none';
+                if (error.name === 'AbortError') {
+                    Swal.fire('⏱️ Timeout', 'Proses lebih dari 60 detik. Cek Apps Script deployment.', 'error');
                 } else {
-                    console.log("Gagal ambil data tracker, gunakan fallback");
+                    Swal.fire('❌ Koneksi Gagal', 'Error: ' + error.message, 'error');
+                }
+            });
+        }
+
+        // =============================================
+        // MODAL GENERATE SUMMARY BUYER & TRACKER
+        // =============================================
+        let selectedTrackerData = null;
+
+        function openGenBuyerModal() {
+            closeActionSheet();
+            setTimeout(() => {
+                const modal = document.getElementById('summaryBuyerModal');
+                document.getElementById('gen_step1').style.display = 'block';
+                document.getElementById('gen_step2').style.display = 'none';
+                document.getElementById('gen_pass').value = '';
+                
+                // Reset state
+                selectedTrackerData = null;
+                document.getElementById('tracker_list').innerHTML = '';
+                
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('show'), 10);
+            }, 300);
+        }
+
+        function closeGenBuyerModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            const modal = document.getElementById('summaryBuyerModal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+            ['gen_pass', 'gen_supplier', 'gen_shipment'].forEach(id => {
+                document.getElementById(id).value = "";
+            });
+            selectedTrackerData = null;
+        }
+
+        function verifyGenPass() {
+            const pass = document.getElementById('gen_pass').value;
+            if (pass === 'WASHD1') {
+                document.getElementById('gen_step1').style.display = 'none';
+                fetchTrackerData(); // Panggil fungsi ambil data Tracker
+            } else {
+                Swal.fire('Akses Ditolak', 'Password SPV Salah!', 'error');
+            }
+        }
+
+        function fetchTrackerData() {
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "MEMUAT DATA TRACKER...";
+
+            // TIMEOUT 30 DETIK
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+            // Request ke Apps Script untuk mengambil data dari D_DEFECT
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "get_tracker", password: "WASHD1" }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                signal: controller.signal
+            })
+            .then(res => {
+                clearTimeout(timeoutId);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.text();
+            })
+            .then(text => {
+                document.getElementById('loading').style.display = 'none';
+                try {
+                    const data = JSON.parse(text);
+                    if (data.result === "success" && data.tracker_data) {
+                        renderTrackerList(data.tracker_data);
+                    } else {
+                        console.log("Gagal ambil data tracker, gunakan fallback");
+                        renderDummyTracker();
+                    }
+                } catch (e) {
+                    console.log("Response bukan JSON, gunakan fallback");
                     renderDummyTracker();
                 }
-            } catch (e) {
-                console.log("Response bukan JSON, gunakan fallback");
+            })
+            .catch((error) => {
+                clearTimeout(timeoutId);
+                document.getElementById('loading').style.display = 'none';
+                console.log("Koneksi gagal atau timeout, gunakan fallback: " + error.message);
                 renderDummyTracker();
+            });
+        }
+
+        function renderDummyTracker() {
+            // Data bohongan supaya UI tetap bisa diklik-klik jika server belum disetting
+            const dummy = [
+                { buyer: 'CK NA', style: '44C148G', color: 'Billowing Sail' },
+                { buyer: 'TH EU', style: 'XM0XM04862', color: 'Provence' },
+                { buyer: 'PERRY ELLIS', style: '4KFW7005', color: 'Ashleigh Blue' },
+                { buyer: 'VICTORIA\'S SECRET', style: '10241546', color: 'Coconut White' }
+            ];
+            renderTrackerList(dummy);
+        }
+
+        function renderTrackerList(items) {
+            document.getElementById('gen_step2').style.display = 'block';
+            const list = document.getElementById('tracker_list');
+            selectedTrackerData = null;
+
+            if (!items || items.length === 0) {
+                list.innerHTML = `<div class="empty-state">TIDAK ADA DATA DI D_DEFECT SAAT INI.</div>`;
+                return;
             }
-        })
-        .catch((error) => {
-            clearTimeout(timeoutId);
-            document.getElementById('loading').style.display = 'none';
-            console.log("Koneksi gagal atau timeout, gunakan fallback: " + error.message);
-            renderDummyTracker();
-        });
-    }
 
-    function renderDummyTracker() {
-        // Data bohongan supaya UI tetap bisa diklik-klik jika server belum disetting
-        const dummy = [
-            { buyer: 'CK NA', style: '44C148G', color: 'Billowing Sail' },
-            { buyer: 'TH EU', style: 'XM0XM04862', color: 'Provence' },
-            { buyer: 'PERRY ELLIS', style: '4KFW7005', color: 'Ashleigh Blue' },
-            { buyer: 'VICTORIA\'S SECRET', style: '10241546', color: 'Coconut White' }
-        ];
-        renderTrackerList(dummy);
-    }
-
-    function renderTrackerList(items) {
-        document.getElementById('gen_step2').style.display = 'block';
-        const list = document.getElementById('tracker_list');
-        selectedTrackerData = null;
-
-        if (!items || items.length === 0) {
-            list.innerHTML = `<div class="empty-state">TIDAK ADA DATA DI D_DEFECT SAAT INI.</div>`;
-            return;
+            list.innerHTML = items.map((item, index) => `
+                <div class="tracker-item" id="tracker_item_${index}" onclick="selectTrackerItem(${index}, '${item.buyer}', '${item.style}', '${item.color}')">
+                    <span class="tracker-badge">${item.buyer}</span>
+                    <span>${item.style} - ${item.color}</span>
+                </div>
+            `).join('');
         }
 
-        list.innerHTML = items.map((item, index) => `
-            <div class="tracker-item" id="tracker_item_${index}" onclick="selectTrackerItem(${index}, '${item.buyer}', '${item.style}', '${item.color}')">
-                <span class="tracker-badge">${item.buyer}</span>
-                <span>${item.style} - ${item.color}</span>
-            </div>
-        `).join('');
-    }
-
-    function selectTrackerItem(index, buyer, style, color) {
-        // Hapus styling selected dari semua elemen list
-        document.querySelectorAll('.tracker-item').forEach(el => el.classList.remove('selected'));
-        // Tambahkan styling selected ke elemen yang diklik
-        document.getElementById(`tracker_item_${index}`).classList.add('selected');
-        // Simpan data yang dipilih
-        selectedTrackerData = { buyer, style, color };
-    }
-
-    function executeGenerateSummaryBuyer() {
-        if (!selectedTrackerData) {
-            Swal.fire('Perhatian', 'Silakan klik / pilih salah satu data dari Tracker terlebih dahulu!', 'warning');
-            return;
+        function selectTrackerItem(index, buyer, style, color) {
+            // Hapus styling selected dari semua elemen list
+            document.querySelectorAll('.tracker-item').forEach(el => el.classList.remove('selected'));
+            // Tambahkan styling selected ke elemen yang diklik
+            document.getElementById(`tracker_item_${index}`).classList.add('selected');
+            // Simpan data yang dipilih
+            selectedTrackerData = { buyer, style, color };
         }
 
-        const supplier = document.getElementById('gen_supplier').value.trim();
-        const shipment = document.getElementById('gen_shipment').value;
+        function executeGenerateSummaryBuyer() {
+            if (!selectedTrackerData) {
+                Swal.fire('Perhatian', 'Silakan klik / pilih salah satu data dari Tracker terlebih dahulu!', 'warning');
+                return;
+            }
 
-        if (!supplier) {
-            Swal.fire('Perhatian', 'Nama Supplier wajib diisi!', 'warning');
-            return;
+            const supplier = document.getElementById('gen_supplier').value.trim();
+            const shipment = document.getElementById('gen_shipment').value;
+
+            if (!supplier) {
+                Swal.fire('Perhatian', 'Nama Supplier wajib diisi!', 'warning');
+                return;
+            }
+            if (!shipment) {
+                Swal.fire('Perhatian', 'Tanggal Shipment wajib diisi!', 'warning');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "GENERATING SUMMARY BUYER...";
+
+            const payload = {
+                action:   "generate_summary",
+                password: "WASHD1",
+                buyer:    selectedTrackerData.buyer,
+                style:    selectedTrackerData.style,
+                color:    selectedTrackerData.color,
+                supplier: supplier,
+                shipment: shipment
+            };
+
+            // Kirim request ke server (tanpa peduli error atau sukses)
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .finally(() => {
+                // INI AKAN SELALU DIJALANKAN APAPUN YANG TERJADI
+                document.getElementById('loading').style.display = 'none';
+                closeGenBuyerModal(); // Tutup modal generate
+                
+                // Kasih jeda 400ms biar animasi modal selesai, lalu panggil SweetAlert
+                setTimeout(() => {
+                    Swal.fire({
+                        title: '✅ BERHASIL',
+                        text: 'Summary Buyer berhasil digenerate! Silakan cek Spreadsheet Anda.',
+                        icon: 'success',
+                        confirmButtonText: 'Tutup',
+                        confirmButtonColor: '#10b981',
+                        allowOutsideClick: false // Paksa user klik tombol Tutup
+                    });
+                }, 400); 
+            });
         }
-        if (!shipment) {
-            Swal.fire('Perhatian', 'Tanggal Shipment wajib diisi!', 'warning');
-            return;
-        }
 
-        // CEK URL SCRIPT DULU
-        if (!SCRIPT_URL || SCRIPT_URL.includes("ISI_DENGAN_LINK") || SCRIPT_URL.trim() === "") {
-            document.getElementById('loading').style.display = 'none';
-            Swal.fire('Error Konfigurasi', '❌ URL Apps Script belum dikonfigurasi!\n\nMinta ke Admin untuk set SCRIPT_URL yang benar di file HTML.', 'error');
-            return;
-        }
+        // =============================================
+        // DATABASE BUYER / STYLE / COLOR (INTERNAL)
+        // =============================================
+        const rawDbData = `BUYER,STYLE,COLOR
+    TH EU,XM0XM04862,Provence
+    ,,Mudstone
+    ,,Desert Sky
+    ,WW0WW50599,Ecru
+    ,,Dark Night
+    ,WW0WW50712,Linear Pop
+    ,WW0WW50710,Linear Pop
+    ,,Hibiscus Garden
+    ,WW0WW49724,Citronella
+    CK NA,44C148G,Billowing Sail
+    ,44G033G,Angel Hair
+    ,44E107G,Ancient Water
+    ,,Brilliant White
+    ,,Shadow
+    ,,Plein Air
+    ,,Dusky Orchid
+    ,44E108G,Splatter Floral
+    ,,Extended Monogram
+    ,47F104G,Brilliant White
+    ,,India Ink
+    ,40EM125,Oil Green
+    ,,Tigers Eye
+    ,,Dusted Fox
+    ,,Dark Sapphire
+    ,,Estate Blue
+    ,,Plein Air
+    ,47H101G,Dusted Fox
+    ,47H129G,Brilliant White
+    ,47H693G,Blue Beverly
+    ,47H688G,Still Water
+    ,47H012G,Brilliant White
+    ,,Estate Blue
+    ,47H013G,Dusky Orchid
+    ,47H905G,Fulton Blue
+    ,4LH111G,Brilliant White
+    ,,Dark Sapphire
+    ,,Olive Night
+    ,,Windsurfer
+    ,,Ballet Slipper
+    ,LV04LH111G,Dark Sapphire
+    ,,Brilliant White
+    ,,Windsurfer
+    ,LV04RH100G,Brilliant White
+    ,,Roasted Cashew
+    ,4RH100G,Brilliant White
+    ,4RH102G,Winter Blue
+    PERRY ELLIS,4KFW7005,Ashleigh Blue
+    ,,Dark Sapphire
+    ,4KFW7024,Silver Birch
+    ,,Dark Sapphire
+    NIC & ZOE,M261978,Blue Multi
+    ,M261021,Aquifer
+    ,,Dark Indigo
+    ,,Paper White
+    ,M261074,Blue Multi
+    ,M261621,Classic Cream
+    ,,Dark Indigo
+    ,M261303,Blue Multi
+    ,F261909N,Dark Indigo
+    ,M261699,Neutral Mix
+    JJIL,WDR347571,Aqua Breeze
+    ,WDR348041,Lt Blue
+    ,WTP345601,Black
+    AN TAYLOR,311-782429,Lemon Brulee
+    ,,Thyme Garden
+    ,,Cocoa Bliss
+    ,312-768474,Cocoa Bliss
+    Ellen Fisher,F5SNY-S4418,Everglade
+    ,F5SNY-J5809,Ink
+    ,,Graphite
+    ,,Wine
+    ,,Rye
+    ,F5SNY-J5763,Ruby
+    ,,Ink
+    ,F6URT-T6200,Black/White
+    ,F6URT-P4366,Black/White
+    ,S6GBA-T5705,Black
+    ,,White
+    ,,Deep Dive
+    ,,Ibiza
+    ,,Crystal Pink
+    ,,Blackberry
+    ,,Lavender
+    ,,Soleil
+    ,S6GBA-U4415,Black
+    ,S6GBO-N1592,Hazelwood
+    ,,Deep Dive
+    ,S6GBO-U4415,Soleil
+    ,,Deep Dive
+    ,,Hazelwood
+    ,S6GBO-T5705,Cornflower
+    ,,Soleil
+    ,S6YCD-T5705,Black/White
+    ,,Geyser
+    ,S6YCW-T6064,Ink
+    ,S6YCN-P4936,White/Black
+    ,S6YCN-T6483,Sun Dried
+    ,,Black/White
+    ,S6GC1-T6441,Ivory
+    ,,Skylight
+    ,,Watermelon
+    ,S6GC1-T5775,Grape
+    ,,Black
+    ,S6OLA-T6353,Aqua
+    ,,Crystal Pink
+    ,S6OLA-T6356,Black
+    ,,Belf Flower
+    ,S6OLA-T6450,White
+    ,,Breeze
+    ,,Crystal Pink
+    ,S6OLA-T6166,White
+    ,,Bright Aster
+    ,,Fuchsia
+    ,,Sapphire
+    ,S6OLA-T6360,White
+    ,,Bright Aster
+    ,S6OLA-T6507,Petunia
+    ,,Aqua
+    ,S6OLA-T6368,Petunia
+    ,,Teal
+    ,S6OLA-T6478,Breeze
+    ,,White
+    ,S6YCN-T5775,White/Black
+    ,S6YCN-T6104,White/Black
+    ,S6YCR-P4869,Grenadine
+    ,,Black/White
+    ,S6YCR-T6031,Nile
+    ,,Grenadine
+    ,,Black/White
+    ,S6YCP-T5775,Deep Dive
+    ,S6YCP-T6334,Deep Dive
+    ,,Sangria
+    ,S6YCP-T6064,Sangria
+    ,S6DEE-J5558,Haze
+    ,,Ink
+    ,S6NWG-U4393,Papyrus
+    ,S6NWG-S4418,Papyrus
+    ,S6NWG-T6090,Berry Bloom
+    ,S6OCB-T6064,White
+    ,,Deep Dive
+    ,,Black
+    ,S6OCB-S4431,Deep Dive
+    ,,Black
+    ,S6OCB-T6356,White
+    ,,Berry Bloom
+    ,S6AJ9-T5704,Citrus
+    ,S6AJ9-T6031,Citrus
+    ,S6IUU-T6514,Deep Dive
+    ,,Cornflower
+    ,S6IUU-T6353,Hazelwood
+    ,,Cornflower
+    ,,Deep Dive
+    Lily P,20232,Multi Dahlia
+    ,19381,Paradise Punch
+    ,,Capri Blue
+    ,,Conch Shell
+    ,,Resort White
+    ,,Iced Latte
+    ,21186,Conch Shell
+    ,23049,Resort White
+    ,,Citrus Cooler
+    ,22142,Conch Shell
+    ,,Mint Condition
+    ,,Resort White
+    ,22076,Sunset Orange
+    WHBM/CHICCO’S,010-25W37320,Crush
+    ,,Flamenco
+    ,010-25C127788,Alabaster
+    ,010-26W41919,Quiet Spot
+    ,210-26C139257,Alabaster
+    BROOK BROTHERS,1000107174,Fun Stripe
+    ,1000108578,Red Alpine
+    ,,Alpine Navy
+    ,,Dk Sea Tartan
+    ,,Hydrangea
+    ,,Navy Brandy
+    ,,Alpine
+    ,,Dk Sea Tartan
+    VICTORIA’S SECRET,10241546,Coconut White
+    ,,Gold Lurix
+    ,10241547,Pink Frosting
+    ,,Coconut White
+    ,10241540,Fresh Jam
+    ,,Whimsy/Coconut
+    ,10241679,Dot Coconut
+    ,10240823,Black
+    ,10347757,Scrept Heart
+    DILLARDS,S65WM207,Pale Lemon
+    ,S65WM500,Egg shell
+    ,,Ferngreen
+    ,Y35WM100,Lt Blue
+    ,,White
+    ,,Black
+    ,,DK Navy
+    ,Y35WM100A,White
+    ,,DK Navy
+    ,,Lt Periwinkl
+    ,,Black
+    ,Y35WM105,Black
+    ,Y35WM106,Navy
+    ,Y35WM107,Lt Blue
+    ,Y35WM108,White
+    ,Y55KM220,White
+    ,Y55KM221,White
+    ,Y55KM223,Blue
+    ,Y55KM224,Dk Blue
+    J MC,11173U106 /,Coral Rose
+    ,0225141022/,White
+    ,18174U101,Navy
+    ,,Coral
+    ,,Teal
+    ,242231022,White
+    ,,Tan
+    ,,Sky Blue
+    ,,Navy
+    ,236681022,White
+    ,,Denim
+    TOMMY BAHAMA,SW622735,Sea Clay
+    LL.Bean,522846,Indigo Ink
+    ,519702,Sky Blue
+    ,,White
+    ,519776,Faded Olive
+    ,,Chambray
+    ,,Faded Olive
+    ,526440,Navy
+    ,,Deepest Brown
+    ,,Pink Sandstone
+    ,526910,Deepest Brown`;
 
-        document.getElementById('loading').style.display = 'flex';
-        document.getElementById('loading-text').innerText = "GENERATING SUMMARY BUYER...";
-
-        const payload = {
-            action:   "generate_summary",
-            password: "WASHD1",
-            buyer:    selectedTrackerData.buyer,
-            style:    selectedTrackerData.style,
-            color:    selectedTrackerData.color,
-            supplier: supplier,
-            shipment: shipment
+        const buyerMapping = {
+            "CK NA":          ["CALVIN KLEIN"],
+            "TH EU":          ["TH NA"],
+            "LILY P":          ["LILLY PULITZER"],
+            "WHBM/CHICCO'S":  ["WHBM", "CHICO'S"],
+            "BROOK BROTHERS": ["BROOKS BROTHERS"],
+            "VICTORIA'S SECRET": ["VICTORIA'S SECRET"],
+            "JJIL":           ["J.JILL"],
+            "AN TAYLOR":      ["ANN TAYLOR"],
+            "ELLEN FISHER":   ["EILEEN FISHER"],
+            "LL.BEAN":        ["LL.BEAN"],
+            "J MC":           ["JMC"]
         };
 
-        // FETCH DENGAN TIMEOUT 60 DETIK
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 sec timeout
+        let dynamicDB = [];
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            signal: controller.signal // Untuk timeout
-        })
-        .then(res => {
-            clearTimeout(timeoutId);
-            
-            // CEK HTTP STATUS DULU
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-            }
-            return res.text();
-        })
-        .then(text => {
-            document.getElementById('loading').style.display = 'none';
-            
-            // COBA PARSE JSON
-            try {
-                const data = JSON.parse(text);
-                closeGenBuyerModal();
-                if (data.result === "success") {
-                    Swal.fire('✅ Sukses', 'Summary Buyer berhasil digenerate!\n\nCek spreadsheet sheet baru: ' + selectedTrackerData.buyer, 'success');
-                } else {
-                    Swal.fire('⚠️ Gagal', 'Error dari server:\n' + (data.error || 'Tidak ada pesan error'), 'error');
+        function buildDatabase() {
+            let rows = rawDbData.trim().split('\n');
+            let lastBuyer = "", lastStyle = "";
+            for (let i = 1; i < rows.length; i++) {
+                let cols = rows[i].split(',').map(x => x.trim());
+                if (cols.length < 3 && cols.join('') === '') continue;
+                let rawBuyer = cols[0] || "";
+                let rawStyle = cols[1] || "";
+                let rawColor = cols[2] || "";
+                if (rawBuyer) lastBuyer = rawBuyer;
+                if (rawStyle) lastStyle = rawStyle;
+                let cStyle = lastStyle.replace(/\.0$/, '');
+                let cColor = rawColor;
+                if (lastBuyer && cStyle) {
+                    let keyBuyer = lastBuyer.toUpperCase();
+                    let mappedBuyers = buyerMapping[keyBuyer] || [keyBuyer];
+                    mappedBuyers.forEach(b => {
+                        dynamicDB.push({ buyer: b, style: cStyle.toUpperCase(), color: cColor.toUpperCase() });
+                    });
                 }
-            } catch (parseErr) {
-                // RESPONSE BUKAN JSON = TIMEOUT ATAU ERROR GOOGLE
-                closeGenBuyerModal();
-                console.error("Respons Server (Raw):", text.substring(0, 500));
-                Swal.fire(
-                    '⏱️ Server Timeout',
-                    'Apps Script terlalu lama merespons (>60 detik).\n\n✅ Solusi:\n1. Buka Google Sheets manual\n2. Buka Apps Script (Tools > Script Editor)\n3. Klik Deploy > Manage Deployments\n4. Pastikan deployment masih AKTIF',
-                    'error'
-                );
-            }
-        })
-        .catch((error) => {
-            clearTimeout(timeoutId);
-            document.getElementById('loading').style.display = 'none';
-            
-            // DETEKSI JENIS ERROR
-            let errorMsg = error.message;
-            if (error.name === 'AbortError') {
-                Swal.fire(
-                    '⏱️ Timeout (>60 detik)',
-                    'Server sangat lambat. Mungkin:\n\n❌ Apps Script deployment tidak aktif\n❌ Spreadsheet sedang sibuk\n❌ Network sangat lambat\n\n✅ Coba: Buka Manual di Google Sheets',
-                    'error'
-                );
-            } else if (errorMsg.includes('Failed to fetch')) {
-                Swal.fire(
-                    '✅BERHASIL ! CEK SPREADSHEET'
-                );
-            } else {
-                Swal.fire(
-                    '❌ Error: ' + error.name,
-                    'Detail: ' + errorMsg,
-                    'error'
-                );
-            }
-            
-            console.error("Fetch Error Details:", {
-                name: error.name,
-                message: error.message,
-                url: SCRIPT_URL
-            });
-        });
-    }
-
-    // =============================================
-    // DATABASE BUYER / STYLE / COLOR (INTERNAL)
-    // =============================================
-    const rawDbData = `BUYER,STYLE,COLOR
-TH EU,XM0XM04862,Provence
-,,Mudstone
-,,Desert Sky
-,WW0WW50599,Ecru
-,,Dark Night
-,WW0WW50712,Linear Pop
-,WW0WW50710,Linear Pop
-,,Hibiscus Garden
-,WW0WW49724,Citronella
-CK NA,44C148G,Billowing Sail
-,44G033G,Angel Hair
-,44E107G,Ancient Water
-,,Brilliant White
-,,Shadow
-,,Plein Air
-,,Dusky Orchid
-,44E108G,Splatter Floral
-,,Extended Monogram
-,47F104G,Brilliant White
-,,India Ink
-,40EM125,Oil Green
-,,Tigers Eye
-,,Dusted Fox
-,,Dark Sapphire
-,,Estate Blue
-,,Plein Air
-,47H101G,Dusted Fox
-,47H129G,Brilliant White
-,47H693G,Blue Beverly
-,47H688G,Still Water
-,47H012G,Brilliant White
-,,Estate Blue
-,47H013G,Dusky Orchid
-,47H905G,Fulton Blue
-,4LH111G,Brilliant White
-,,Dark Sapphire
-,,Olive Night
-,,Windsurfer
-,,Ballet Slipper
-,LV04LH111G,Dark Sapphire
-,,Brilliant White
-,,Windsurfer
-,LV04RH100G,Brilliant White
-,,Roasted Cashew
-,4RH100G,Brilliant White
-,4RH102G,Winter Blue
-PERRY ELLIS,4KFW7005,Ashleigh Blue
-,,Dark Sapphire
-,4KFW7024,Silver Birch
-,,Dark Sapphire
-NIC & ZOE,M261978,Blue Multi
-,M261021,Aquifer
-,,Dark Indigo
-,,Paper White
-,M261074,Blue Multi
-,M261621,Classic Cream
-,,Dark Indigo
-,M261303,Blue Multi
-,F261909N,Dark Indigo
-,M261699,Neutral Mix
-JJIL,WDR347571,Aqua Breeze
-,WDR348041,Lt Blue
-,WTP345601,Black
-AN TAYLOR,311-782429,Lemon Brulee
-,,Thyme Garden
-,,Cocoa Bliss
-,312-768474,Cocoa Bliss
-Ellen Fisher,F5SNY-S4418,Everglade
-,F5SNY-J5809,Ink
-,,Graphite
-,,Wine
-,,Rye
-,F5SNY-J5763,Ruby
-,,Ink
-,F6URT-T6200,Black/White
-,F6URT-P4366,Black/White
-,S6GBA-T5705,Black
-,,White
-,,Deep Dive
-,,Ibiza
-,,Crystal Pink
-,,Blackberry
-,,Lavender
-,,Soleil
-,S6GBA-U4415,Black
-,S6GBO-N1592,Hazelwood
-,,Deep Dive
-,S6GBO-U4415,Soleil
-,,Deep Dive
-,,Hazelwood
-,S6GBO-T5705,Cornflower
-,,Soleil
-,S6YCD-T5705,Black/White
-,,Geyser
-,S6YCW-T6064,Ink
-,S6YCN-P4936,White/Black
-,S6YCN-T6483,Sun Dried
-,,Black/White
-,S6GC1-T6441,Ivory
-,,Skylight
-,,Watermelon
-,S6GC1-T5775,Grape
-,,Black
-,S6OLA-T6353,Aqua
-,,Crystal Pink
-,S6OLA-T6356,Black
-,,Belf Flower
-,S6OLA-T6450,White
-,,Breeze
-,,Crystal Pink
-,S6OLA-T6166,White
-,,Bright Aster
-,,Fuchsia
-,,Sapphire
-,S6OLA-T6360,White
-,,Bright Aster
-,S6OLA-T6507,Petunia
-,,Aqua
-,S6OLA-T6368,Petunia
-,,Teal
-,S6OLA-T6478,Breeze
-,,White
-,S6YCN-T5775,White/Black
-,S6YCN-T6104,White/Black
-,S6YCR-P4869,Grenadine
-,,Black/White
-,S6YCR-T6031,Nile
-,,Grenadine
-,,Black/White
-,S6YCP-T5775,Deep Dive
-,S6YCP-T6334,Deep Dive
-,,Sangria
-,S6YCP-T6064,Sangria
-,S6DEE-J5558,Haze
-,,Ink
-,S6NWG-U4393,Papyrus
-,S6NWG-S4418,Papyrus
-,S6NWG-T6090,Berry Bloom
-,S6OCB-T6064,White
-,,Deep Dive
-,,Black
-,S6OCB-S4431,Deep Dive
-,,Black
-,S6OCB-T6356,White
-,,Berry Bloom
-,S6AJ9-T5704,Citrus
-,S6AJ9-T6031,Citrus
-,S6IUU-T6514,Deep Dive
-,,Cornflower
-,S6IUU-T6353,Hazelwood
-,,Cornflower
-,,Deep Dive
-Lily P,20232,Multi Dahlia
-,19381,Paradise Punch
-,,Capri Blue
-,,Conch Shell
-,,Resort White
-,,Iced Latte
-,21186,Conch Shell
-,23049,Resort White
-,,Citrus Cooler
-,22142,Conch Shell
-,,Mint Condition
-,,Resort White
-,22076,Sunset Orange
-WHBM/CHICCO’S,010-25W37320,Crush
-,,Flamenco
-,010-25C127788,Alabaster
-,010-26W41919,Quiet Spot
-,210-26C139257,Alabaster
-BROOK BROTHERS,1000107174,Fun Stripe
-,1000108578,Red Alpine
-,,Alpine Navy
-,,Dk Sea Tartan
-,,Hydrangea
-,,Navy Brandy
-,,Alpine
-,,Dk Sea Tartan
-VICTORIA’S SECRET,10241546,Coconut White
-,,Gold Lurix
-,10241547,Pink Frosting
-,,Coconut White
-,10241540,Fresh Jam
-,,Whimsy/Coconut
-,10241679,Dot Coconut
-,10240823,Black
-,10347757,Scrept Heart
-DILLARDS,S65WM207,Pale Lemon
-,S65WM500,Egg shell
-,,Ferngreen
-,Y35WM100,Lt Blue
-,,White
-,,Black
-,,DK Navy
-,Y35WM100A,White
-,,DK Navy
-,,Lt Periwinkl
-,,Black
-,Y35WM105,Black
-,Y35WM106,Navy
-,Y35WM107,Lt Blue
-,Y35WM108,White
-,Y55KM220,White
-,Y55KM221,White
-,Y55KM223,Blue
-,Y55KM224,Dk Blue
-J MC,11173U106 /,Coral Rose
-,0225141022/,White
-,18174U101,Navy
-,,Coral
-,,Teal
-,242231022,White
-,,Tan
-,,Sky Blue
-,,Navy
-,236681022,White
-,,Denim
-TOMMY BAHAMA,SW622735,Sea Clay
-LL.Bean,522846,Indigo Ink
-,519702,Sky Blue
-,,White
-,519776,Faded Olive
-,,Chambray
-,,Faded Olive
-,526440,Navy
-,,Deepest Brown
-,,Pink Sandstone
-,526910,Deepest Brown`;
-
-    const buyerMapping = {
-        "CK NA":          ["CALVIN KLEIN"],
-        "TH EU":          ["TH NA"],
-        "LILY P":         ["LILLY PULITZER"],
-        "WHBM/CHICCO'S":  ["WHBM", "CHICO'S"],
-        "BROOK BROTHERS": ["BROOKS BROTHERS"],
-        "VICTORIA'S SECRET": ["VICTORIA'S SECRET"],
-        "JJIL":           ["J.JILL"],
-        "AN TAYLOR":      ["ANN TAYLOR"],
-        "ELLEN FISHER":   ["EILEEN FISHER"],
-        "LL.BEAN":        ["LL.BEAN"],
-        "J MC":           ["JMC"]
-    };
-
-    let dynamicDB = [];
-
-    function buildDatabase() {
-        let rows = rawDbData.trim().split('\n');
-        let lastBuyer = "", lastStyle = "";
-        for (let i = 1; i < rows.length; i++) {
-            let cols = rows[i].split(',').map(x => x.trim());
-            if (cols.length < 3 && cols.join('') === '') continue;
-            let rawBuyer = cols[0] || "";
-            let rawStyle = cols[1] || "";
-            let rawColor = cols[2] || "";
-            if (rawBuyer) lastBuyer = rawBuyer;
-            if (rawStyle) lastStyle = rawStyle;
-            let cStyle = lastStyle.replace(/\.0$/, '');
-            let cColor = rawColor;
-            if (lastBuyer && cStyle) {
-                let keyBuyer = lastBuyer.toUpperCase();
-                let mappedBuyers = buyerMapping[keyBuyer] || [keyBuyer];
-                mappedBuyers.forEach(b => {
-                    dynamicDB.push({ buyer: b, style: cStyle.toUpperCase(), color: cColor.toUpperCase() });
-                });
             }
         }
-    }
 
-    function populateBuyerSelect() {
-        let buyerSelect = document.getElementById('buyer');
-        let currentVal = buyerSelect.value;
-        let mappedBuyers = [...new Set(dynamicDB.map(r => r.buyer))].filter(Boolean).sort();
-        buyerSelect.innerHTML = '<option value="" disabled selected>-- Pilih Buyer --</option>' +
-            mappedBuyers.map(b => `<option value="${b}">${b}</option>`).join('');
-        if (mappedBuyers.includes(currentVal)) buyerSelect.value = currentVal;
-    }
-
-    function updateDropdowns(source) {
-        _updateDropdownsLogic(source,
-            document.getElementById('buyer'),
-            document.getElementById('style'),
-            document.getElementById('color'));
-    }
-
-    function _updateDropdownsLogic(source, buyerSelect, styleSelect, colorSelect) {
-        let curBuyer = buyerSelect.value;
-        let curStyle = styleSelect.value;
-        let filtered = dynamicDB;
-
-        if (source === 'buyer') {
-            curStyle = "";
-            styleSelect.innerHTML = '<option value="" disabled selected>-- Pilih Style --</option>';
-            colorSelect.innerHTML = '<option value="" disabled selected>-- Pilih Color --</option>';
-        }
-        if (curBuyer) {
-            filtered = filtered.filter(row => row.buyer === curBuyer);
-            let validStyles = [...new Set(filtered.map(row => row.style))].filter(Boolean).sort();
-            styleSelect.innerHTML = '<option value="" disabled selected>-- Pilih Style --</option>' +
-                validStyles.map(s => `<option value="${s}">${s}</option>`).join('');
-            if (validStyles.includes(curStyle)) styleSelect.value = curStyle;
-            else curStyle = "";
-        }
-        if (source === 'style') {
-            colorSelect.innerHTML = '<option value="" disabled selected>-- Pilih Color --</option>';
-        }
-        if (curBuyer && curStyle) {
-            let styleFiltered = filtered.filter(row => row.style === curStyle);
-            let validColors = [...new Set(styleFiltered.map(row => row.color))].filter(Boolean).sort();
-            colorSelect.innerHTML = '<option value="" disabled selected>-- Pilih Color --</option>' +
-                validColors.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
-    }
-
-    // =============================================
-    // CEK DATA STATIS DARI SERVER
-    // =============================================
-    function fetchStaticData() {
-        let buyer = document.getElementById('buyer').value;
-        let style = document.getElementById('style').value;
-        let color = document.getElementById('color').value;
-        let fields = ['qty_order', 'line_name', 'deliver', 'from_sewing', 'send_washing', 'received_washing'];
-
-        if (!buyer || !style || !color) {
-            fields.forEach(id => {
-                let el = document.getElementById(id);
-                el.classList.remove('readonly-locked');
-                if (id !== 'line_name') el.removeAttribute('readonly');
-            });
-            document.getElementById('line_name').classList.add('clickable');
-            document.getElementById('line_name').setAttribute('readonly', 'true');
-            return;
+        function populateBuyerSelect() {
+            let buyerSelect = document.getElementById('buyer');
+            let currentVal = buyerSelect.value;
+            let mappedBuyers = [...new Set(dynamicDB.map(r => r.buyer))].filter(Boolean).sort();
+            buyerSelect.innerHTML = '<option value="" disabled selected>-- Pilih Buyer --</option>' +
+                mappedBuyers.map(b => `<option value="${b}">${b}</option>`).join('');
+            if (mappedBuyers.includes(currentVal)) buyerSelect.value = currentVal;
         }
 
-        document.getElementById('loading').style.display = 'flex';
-        document.getElementById('loading-text').innerText = "MENGECEK DATA...";
+        function updateDropdowns(source) {
+            _updateDropdownsLogic(source,
+                document.getElementById('buyer'),
+                document.getElementById('style'),
+                document.getElementById('color'));
+        }
 
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action: "check_static", buyer, style, color })
-        })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('loading').style.display = 'none';
-            if (data.result === "success") {
-                document.getElementById('qty_order').value      = data.qty_order;
-                document.getElementById('line_name').value      = data.line_name;
-                document.getElementById('deliver').value        = data.deliver;
-                document.getElementById('from_sewing').value    = data.from_sewing;
-                document.getElementById('send_washing').value   = data.send_washing;
-                document.getElementById('received_washing').value = data.received_washing;
-                fields.forEach(id => {
-                    let el = document.getElementById(id);
-                    el.classList.add('readonly-locked');
-                    el.setAttribute('readonly', 'true');
-                    el.classList.remove('clickable');
-                });
-            } else {
+        function _updateDropdownsLogic(source, buyerSelect, styleSelect, colorSelect) {
+            let curBuyer = buyerSelect.value;
+            let curStyle = styleSelect.value;
+            let filtered = dynamicDB;
+
+            if (source === 'buyer') {
+                curStyle = "";
+                styleSelect.innerHTML = '<option value="" disabled selected>-- Pilih Style --</option>';
+                colorSelect.innerHTML = '<option value="" disabled selected>-- Pilih Color --</option>';
+            }
+            if (curBuyer) {
+                filtered = filtered.filter(row => row.buyer === curBuyer);
+                let validStyles = [...new Set(filtered.map(row => row.style))].filter(Boolean).sort();
+                styleSelect.innerHTML = '<option value="" disabled selected>-- Pilih Style --</option>' +
+                    validStyles.map(s => `<option value="${s}">${s}</option>`).join('');
+                if (validStyles.includes(curStyle)) styleSelect.value = curStyle;
+                else curStyle = "";
+            }
+            if (source === 'style') {
+                colorSelect.innerHTML = '<option value="" disabled selected>-- Pilih Color --</option>';
+            }
+            if (curBuyer && curStyle) {
+                let styleFiltered = filtered.filter(row => row.style === curStyle);
+                let validColors = [...new Set(styleFiltered.map(row => row.color))].filter(Boolean).sort();
+                colorSelect.innerHTML = '<option value="" disabled selected>-- Pilih Color --</option>' +
+                    validColors.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
+        }
+
+        // =============================================
+        // CEK DATA STATIS DARI SERVER
+        // =============================================
+        function fetchStaticData() {
+            let buyer = document.getElementById('buyer').value;
+            let style = document.getElementById('style').value;
+            let color = document.getElementById('color').value;
+            let fields = ['qty_order', 'line_name', 'deliver', 'from_sewing', 'send_washing', 'received_washing'];
+
+            if (!buyer || !style || !color) {
                 fields.forEach(id => {
                     let el = document.getElementById(id);
                     el.classList.remove('readonly-locked');
@@ -1233,713 +1143,747 @@ LL.Bean,522846,Indigo Ink
                 });
                 document.getElementById('line_name').classList.add('clickable');
                 document.getElementById('line_name').setAttribute('readonly', 'true');
+                return;
             }
-            saveData();
-        })
-        .catch(() => {
-            document.getElementById('loading').style.display = 'none';
-        });
-    }
 
-    // =============================================
-    // UTILITAS UMUM
-    // =============================================
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('darkMode_wash', document.body.classList.contains('dark-mode'));
-    }
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "MENGECEK DATA...";
 
-    function setDefaultDate() {
-        const d = new Date();
-        document.getElementById('tanggal').value =
-            `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    }
-
-    function formatAntiMinus(input) {
-        input.value = input.value.replace(/[^0-9]/g, '');
-    }
-
-    function calculateShiftHours() {
-        let start = document.getElementById('shift_start').value;
-        let end   = document.getElementById('shift_end').value;
-        let displaySpan = document.getElementById('shift_hours');
-        if (start && end) {
-            let t1 = start.split(":");
-            let t2 = end.split(":");
-            let d1 = new Date(2000, 0, 1, t1[0], t1[1]);
-            let d2 = new Date(2000, 0, 1, t2[0], t2[1]);
-            if (d2 < d1) d2.setDate(d2.getDate() + 1);
-            let diff  = (d2 - d1) / (1000 * 60 * 60);
-            let hours = Math.floor(diff);
-            let mins  = Math.round((diff % 1) * 60);
-            displaySpan.innerText = `(${hours} Jam${mins > 0 ? ' ' + mins + ' Menit' : ''})`;
-        } else {
-            displaySpan.innerText = "";
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: "check_static", buyer, style, color })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                if (data.result === "success") {
+                    document.getElementById('qty_order').value      = data.qty_order;
+                    document.getElementById('line_name').value      = data.line_name;
+                    document.getElementById('deliver').value        = data.deliver;
+                    document.getElementById('from_sewing').value    = data.from_sewing;
+                    document.getElementById('send_washing').value   = data.send_washing;
+                    document.getElementById('received_washing').value = data.received_washing;
+                    fields.forEach(id => {
+                        let el = document.getElementById(id);
+                        el.classList.add('readonly-locked');
+                        el.setAttribute('readonly', 'true');
+                        el.classList.remove('clickable');
+                    });
+                } else {
+                    fields.forEach(id => {
+                        let el = document.getElementById(id);
+                        el.classList.remove('readonly-locked');
+                        if (id !== 'line_name') el.removeAttribute('readonly');
+                    });
+                    document.getElementById('line_name').classList.add('clickable');
+                    document.getElementById('line_name').setAttribute('readonly', 'true');
+                }
+                saveData();
+            })
+            .catch(() => {
+                document.getElementById('loading').style.display = 'none';
+            });
         }
-    }
 
-    // =============================================
-    // MODAL PILIH LINE
-    // =============================================
-    let selectedNum   = "";
-    let selectedSuf   = "";
-    let selectedLines = [];
+        // =============================================
+        // UTILITAS UMUM
+        // =============================================
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode_wash', document.body.classList.contains('dark-mode'));
+        }
 
-    function openLineModal() {
-        if (document.getElementById('line_name').classList.contains('readonly-locked')) return;
-        let cur = document.getElementById('line_name').value;
-        selectedLines = cur ? cur.split(',').map(x => x.trim()).filter(x => x) : [];
-        selectedNum = "";
-        selectedSuf = "";
-        renderLineModal();
-        let modal = document.getElementById('lineModal');
-        modal.style.display = 'flex';
-        setTimeout(() => modal.classList.add('show'), 10);
-    }
+        function setDefaultDate() {
+            const d = new Date();
+            document.getElementById('tanggal').value =
+                `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
 
-    function closeLineModal(e) {
-        if (e && e.target !== e.currentTarget) return;
-        if (selectedNum !== "") {
+        function formatAntiMinus(input) {
+            input.value = input.value.replace(/[^0-9]/g, '');
+        }
+
+        function calculateShiftHours() {
+            let start = document.getElementById('shift_start').value;
+            let end   = document.getElementById('shift_end').value;
+            let displaySpan = document.getElementById('shift_hours');
+            if (start && end) {
+                let t1 = start.split(":");
+                let t2 = end.split(":");
+                let d1 = new Date(2000, 0, 1, t1[0], t1[1]);
+                let d2 = new Date(2000, 0, 1, t2[0], t2[1]);
+                if (d2 < d1) d2.setDate(d2.getDate() + 1);
+                let diff  = (d2 - d1) / (1000 * 60 * 60);
+                let hours = Math.floor(diff);
+                let mins  = Math.round((diff % 1) * 60);
+                displaySpan.innerText = `(${hours} Jam${mins > 0 ? ' ' + mins + ' Menit' : ''})`;
+            } else {
+                displaySpan.innerText = "";
+            }
+        }
+
+        // =============================================
+        // MODAL PILIH LINE
+        // =============================================
+        let selectedNum   = "";
+        let selectedSuf   = "";
+        let selectedLines = [];
+
+        function openLineModal() {
+            if (document.getElementById('line_name').classList.contains('readonly-locked')) return;
+            let cur = document.getElementById('line_name').value;
+            selectedLines = cur ? cur.split(',').map(x => x.trim()).filter(x => x) : [];
+            selectedNum = "";
+            selectedSuf = "";
+            renderLineModal();
+            let modal = document.getElementById('lineModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 10);
+        }
+
+        function closeLineModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            if (selectedNum !== "") {
+                let newLine = selectedNum + selectedSuf;
+                if (!selectedLines.includes(newLine)) selectedLines.push(newLine);
+            }
+            let modal = document.getElementById('lineModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.getElementById('line_name').value = selectedLines.join(', ');
+                saveData(); 
+            }, 300);
+        }
+
+        function pickNum(n) { selectedNum = n; renderLineModal(); }
+        function pickSuf(s) { selectedSuf = s; renderLineModal(); }
+
+        function addLineToTag() {
+            if (!selectedNum) { Swal.fire('Perhatian', 'Pilih angka line terlebih dahulu!', 'warning'); return; }
             let newLine = selectedNum + selectedSuf;
             if (!selectedLines.includes(newLine)) selectedLines.push(newLine);
+            selectedNum = ""; selectedSuf = "";
+            renderLineModal();
         }
-        let modal = document.getElementById('lineModal');
-        modal.classList.remove('show');
-        setTimeout(() => {
-            modal.style.display = 'none';
-            document.getElementById('line_name').value = selectedLines.join(', ');
-            saveData(); 
-        }, 300);
-    }
 
-    function pickNum(n) { selectedNum = n; renderLineModal(); }
-    function pickSuf(s) { selectedSuf = s; renderLineModal(); }
-
-    function addLineToTag() {
-        if (!selectedNum) { Swal.fire('Perhatian', 'Pilih angka line terlebih dahulu!', 'warning'); return; }
-        let newLine = selectedNum + selectedSuf;
-        if (!selectedLines.includes(newLine)) selectedLines.push(newLine);
-        selectedNum = ""; selectedSuf = "";
-        renderLineModal();
-    }
-
-    function removeLineTag(line) {
-        selectedLines = selectedLines.filter(x => x !== line);
-        renderLineModal();
-    }
-
-    function renderLineModal() {
-        let tagsHtml = selectedLines.map(l =>
-            `<div class="line-tag">${l} <span onclick="removeLineTag('${l}'); event.stopPropagation();">X</span></div>`
-        ).join('');
-        if (!tagsHtml) tagsHtml = `<span style="color:var(--text-sub); font-size:11px; margin:auto;">Pilih angka di bawah...</span>`;
-        document.getElementById('lineTags').innerHTML = tagsHtml;
-
-        let numsHtml = "";
-        for (let i = 1; i <= 20; i++) {
-            let selClass = (selectedNum == i) ? 'selected' : '';
-            numsHtml += `<button class="num-btn ${selClass}" onclick="pickNum('${i}')">${i}</button>`;
+        function removeLineTag(line) {
+            selectedLines = selectedLines.filter(x => x !== line);
+            renderLineModal();
         }
-        document.getElementById('gridNumbers').innerHTML = numsHtml;
 
-        let sufs = [{ val: "", label: "ANGKA SAJA" }, { val: "A", label: "A" }, { val: "B", label: "B" }];
-        document.getElementById('gridSuffix').innerHTML = sufs.map(s => {
-            let selClass = (selectedSuf === s.val) ? 'selected' : '';
-            return `<button class="suf-btn ${selClass}" onclick="pickSuf('${s.val}')">${s.label}</button>`;
-        }).join('');
-    }
+        function renderLineModal() {
+            let tagsHtml = selectedLines.map(l =>
+                `<div class="line-tag">${l} <span onclick="removeLineTag('${l}'); event.stopPropagation();">X</span></div>`
+            ).join('');
+            if (!tagsHtml) tagsHtml = `<span style="color:var(--text-sub); font-size:11px; margin:auto;">Pilih angka di bawah...</span>`;
+            document.getElementById('lineTags').innerHTML = tagsHtml;
 
-    // =============================================
-    // MASTER DEFECT
-    // =============================================
-    const typeSewingGeneral = [
-        "BROKEN STITCH", "FABRIC DEFECT", "INCONSISTENT", "MISSING", "PLEATED",
-        "POORSHAPE/POINTED/EXPOSED", "PUCKERING", "RUN OF STITCH", "SHADING",
-        "SKIP STITCH", "STAIN", "TRIMMING", "TWIST/ROPPING/FULLNESS", "UNMATCH/HIGH LOW"
-    ];
-
-    const defectMaster = {
-        "SEWING": {
-            "ARMHOLE": typeSewingGeneral, "BACK BODY": typeSewingGeneral, "BARTACK": typeSewingGeneral,
-            "BOTTOM HEMMING": typeSewingGeneral, "BUTTON": typeSewingGeneral, "BUTTON HOLE": typeSewingGeneral,
-            "COLLAR/NECK": typeSewingGeneral, "DECORATIVE": typeSewingGeneral, "FRONT BODY": typeSewingGeneral,
-            "FRONT PLACKET": typeSewingGeneral, "FRONT/BACK RISE": typeSewingGeneral, "HANDMADE": typeSewingGeneral,
-            "INSEAM/OUTSEAM": typeSewingGeneral, "LINING": typeSewingGeneral, "MAIN LABEL/CARE LABEL": typeSewingGeneral,
-            "MANSET": typeSewingGeneral, "OVERLOOK": typeSewingGeneral, "POCKET": typeSewingGeneral,
-            "SHOULDER": typeSewingGeneral, "SIDE SEAM": typeSewingGeneral, "SLEEVE": typeSewingGeneral,
-            "SLIT/VENT": typeSewingGeneral, "STEAM/IRONING": typeSewingGeneral, "WAIST": typeSewingGeneral
-        },
-        "FINISHING": {
-            "BUTTON": ["BROKEN", "MISSING"], "BUTTON HOLE": ["BROKEN"], "HAND MADE": ["BROKEN", "MISSING"],
-            "IRONING": ["CREASEMARK", "EXPOSED", "SHINING"], "OTHER": ["-"], "SHADING": ["-"],
-            "SIZE SPEC": ["-"], "STAIN": ["ENVIRONMENT", "OIL"], "TRIMMING": ["-"],
-            "WEAVING DEFFECT": ["HOLE", "SLUB", "YARNPULL"]
-        },
-        "WASHING": {
-            "BALD VALVET": ["-"], "BLEEDING": ["-"], "CREASEMARK": ["-"], "CRUMPLE": ["-"],
-            "HARSH HANDFEEL": ["-"], "LESS EFFECT": ["-"], "LINE EFFECT": ["-"], "ODOR": ["-"],
-            "OUT OF SHADE": ["-"], "SOBEK": ["-"], "TOO SOFT HANDFEEL": ["-"], "UNEVEN COLOR": ["-"],
-            "UNLEVEL EFFECT": ["-"], "WHITE MARK": ["-"]
-        }
-    };
-
-    let activeDefects   = {};
-    let currentCategory = "WASHING";
-
-    function switchCategory(cat) {
-        currentCategory = cat;
-        document.getElementById('tab_sewing').classList.toggle('active', cat === 'SEWING');
-        document.getElementById('tab_finishing').classList.toggle('active', cat === 'FINISHING');
-        document.getElementById('tab_washing').classList.toggle('active', cat === 'WASHING');
-        const typeCont = document.getElementById('type_container');
-        const areaCont = document.getElementById('area_container');
-        if (cat === 'WASHING') {
-            typeCont.style.display = 'none';
-            areaCont.style.gridColumn = 'span 2';
-        } else {
-            typeCont.style.display = 'flex';
-            areaCont.style.gridColumn = 'span 1';
-        }
-        populateArea();
-    }
-
-    function populateArea() {
-        const selArea = document.getElementById('sel_area');
-        selArea.innerHTML = '<option value="" disabled selected>-- Pilih Area --</option>';
-        Object.keys(defectMaster[currentCategory]).sort().forEach(area => {
-            selArea.innerHTML += `<option value="${area}">${area}</option>`;
-        });
-        document.getElementById('sel_type').innerHTML = '<option value="" disabled selected>-- Pilih Jenis --</option>';
-    }
-
-    function populateType() {
-        const area = document.getElementById('sel_area').value;
-        const selType = document.getElementById('sel_type');
-        selType.innerHTML = '<option value="" disabled selected>-- Pilih Jenis --</option>';
-        if (area && defectMaster[currentCategory][area]) {
-            const types = [...defectMaster[currentCategory][area]].sort();
-            if (types.length === 1 && types[0] === "-") {
-                selType.innerHTML = '<option value="-">TIDAK ADA SUB-JENIS</option>';
-                selType.value = "-";
-            } else {
-                types.forEach(type => { selType.innerHTML += `<option value="${type}">${type}</option>`; });
-                if (types.length === 1) selType.value = types[0];
+            let numsHtml = "";
+            for (let i = 1; i <= 20; i++) {
+                let selClass = (selectedNum == i) ? 'selected' : '';
+                numsHtml += `<button class="num-btn ${selClass}" onclick="pickNum('${i}')">${i}</button>`;
             }
-        }
-    }
+            document.getElementById('gridNumbers').innerHTML = numsHtml;
 
-    // =============================================
-    // CHART
-    // =============================================
-    function initChart() {
-        const ctx = document.getElementById('defectChart').getContext('2d');
-        defectChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Good', 'Defect'],
-                datasets: [{ data: [1, 0], backgroundColor: ['#cbd5e1', '#ef4444'], borderWidth: 0 }]
+            let sufs = [{ val: "", label: "ANGKA SAJA" }, { val: "A", label: "A" }, { val: "B", label: "B" }];
+            document.getElementById('gridSuffix').innerHTML = sufs.map(s => {
+                let selClass = (selectedSuf === s.val) ? 'selected' : '';
+                return `<button class="suf-btn ${selClass}" onclick="pickSuf('${s.val}')">${s.label}</button>`;
+            }).join('');
+        }
+
+        // =============================================
+        // MASTER DEFECT
+        // =============================================
+        const typeSewingGeneral = [
+            "BROKEN STITCH", "FABRIC DEFECT", "INCONSISTENT", "MISSING", "PLEATED",
+            "POORSHAPE/POINTED/EXPOSED", "PUCKERING", "RUN OF STITCH", "SHADING",
+            "SKIP STITCH", "STAIN", "TRIMMING", "TWIST/ROPPING/FULLNESS", "UNMATCH/HIGH LOW"
+        ];
+
+        const defectMaster = {
+            "SEWING": {
+                "ARMHOLE": typeSewingGeneral, "BACK BODY": typeSewingGeneral, "BARTACK": typeSewingGeneral,
+                "BOTTOM HEMMING": typeSewingGeneral, "BUTTON": typeSewingGeneral, "BUTTON HOLE": typeSewingGeneral,
+                "COLLAR/NECK": typeSewingGeneral, "DECORATIVE": typeSewingGeneral, "FRONT BODY": typeSewingGeneral,
+                "FRONT PLACKET": typeSewingGeneral, "FRONT/BACK RISE": typeSewingGeneral, "HANDMADE": typeSewingGeneral,
+                "INSEAM/OUTSEAM": typeSewingGeneral, "LINING": typeSewingGeneral, "MAIN LABEL/CARE LABEL": typeSewingGeneral,
+                "MANSET": typeSewingGeneral, "OVERLOOK": typeSewingGeneral, "POCKET": typeSewingGeneral,
+                "SHOULDER": typeSewingGeneral, "SIDE SEAM": typeSewingGeneral, "SLEEVE": typeSewingGeneral,
+                "SLIT/VENT": typeSewingGeneral, "STEAM/IRONING": typeSewingGeneral, "WAIST": typeSewingGeneral
             },
-            options: {
-                responsive: true, maintainAspectRatio: false, cutout: '75%',
-                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            "FINISHING": {
+                "BUTTON": ["BROKEN", "MISSING"], "BUTTON HOLE": ["BROKEN"], "HAND MADE": ["BROKEN", "MISSING"],
+                "IRONING": ["CREASEMARK", "EXPOSED", "SHINING"], "OTHER": ["-"], "SHADING": ["-"],
+                "SIZE SPEC": ["-"], "STAIN": ["ENVIRONMENT", "OIL"], "TRIMMING": ["-"],
+                "WEAVING DEFFECT": ["HOLE", "SLUB", "YARNPULL"]
+            },
+            "WASHING": {
+                "BALD VALVET": ["-"], "BLEEDING": ["-"], "CREASEMARK": ["-"], "CRUMPLE": ["-"],
+                "HARSH HANDFEEL": ["-"], "LESS EFFECT": ["-"], "LINE EFFECT": ["-"], "ODOR": ["-"],
+                "OUT OF SHADE": ["-"], "SOBEK": ["-"], "TOO SOFT HANDFEEL": ["-"], "UNEVEN COLOR": ["-"],
+                "UNLEVEL EFFECT": ["-"], "WHITE MARK": ["-"]
             }
-        });
-    }
+        };
 
-    // =============================================
-    // DEFECT LIST
-    // =============================================
-    function addDefectToList() {
-        let area = document.getElementById('sel_area').value;
-        let type = currentCategory === 'WASHING' ? "-" : document.getElementById('sel_type').value;
-        if (!area || !type) { Swal.fire('Perhatian', 'Pilih Area dan Jenis Defect terlebih dahulu.', 'warning'); return; }
-        let key = `${currentCategory}_${area}_${type}`;
-        if (activeDefects[key]) { Swal.fire('Info', 'Defect ini sudah ada di daftar.', 'info'); return; }
-        activeDefects[key] = { cat: currentCategory, area, type, qty: "" };
-        document.getElementById('sel_area').value = "";
-        document.getElementById('sel_type').value = "";
-        renderDefectList();
-        if (window.navigator && window.navigator.vibrate) navigator.vibrate(50);
-    }
+        let activeDefects   = {};
+        let currentCategory = "WASHING";
 
-    function renderDefectList() {
-        let container = document.getElementById('active_defects_container');
-        let html = ""; let count = 0;
-        for (let key in activeDefects) {
-            count++;
-            let item = activeDefects[key];
-            let typeSubtitle = item.type === "-" ? "" : `<span class="summary-subtitle">&#8627; ${item.type}</span>`;
-            html += `
-            <div class="summary-card" id="card_${key}">
-                <div class="summary-header">
-                    <div class="summary-title"><span>${item.area}</span>${typeSubtitle}</div>
-                    <button class="btn-del" onclick="removeDefect('${key}')">X</button>
-                </div>
-                <div class="flex-inputs">
-                    <div class="stepper" style="width: 100%;">
-                        <button onclick="adjVal('${key}', -1)">-</button>
-                        <input type="number" id="inp_qty_${key}" value="${item.qty}" oninput="manualInput('${key}', this.value)">
-                        <button onclick="adjVal('${key}', 1)">+</button>
+        function switchCategory(cat) {
+            currentCategory = cat;
+            document.getElementById('tab_sewing').classList.toggle('active', cat === 'SEWING');
+            document.getElementById('tab_finishing').classList.toggle('active', cat === 'FINISHING');
+            document.getElementById('tab_washing').classList.toggle('active', cat === 'WASHING');
+            const typeCont = document.getElementById('type_container');
+            const areaCont = document.getElementById('area_container');
+            if (cat === 'WASHING') {
+                typeCont.style.display = 'none';
+                areaCont.style.gridColumn = 'span 2';
+            } else {
+                typeCont.style.display = 'flex';
+                areaCont.style.gridColumn = 'span 1';
+            }
+            populateArea();
+        }
+
+        function populateArea() {
+            const selArea = document.getElementById('sel_area');
+            selArea.innerHTML = '<option value="" disabled selected>-- Pilih Area --</option>';
+            Object.keys(defectMaster[currentCategory]).sort().forEach(area => {
+                selArea.innerHTML += `<option value="${area}">${area}</option>`;
+            });
+            document.getElementById('sel_type').innerHTML = '<option value="" disabled selected>-- Pilih Jenis --</option>';
+        }
+
+        function populateType() {
+            const area = document.getElementById('sel_area').value;
+            const selType = document.getElementById('sel_type');
+            selType.innerHTML = '<option value="" disabled selected>-- Pilih Jenis --</option>';
+            if (area && defectMaster[currentCategory][area]) {
+                const types = [...defectMaster[currentCategory][area]].sort();
+                if (types.length === 1 && types[0] === "-") {
+                    selType.innerHTML = '<option value="-">TIDAK ADA SUB-JENIS</option>';
+                    selType.value = "-";
+                } else {
+                    types.forEach(type => { selType.innerHTML += `<option value="${type}">${type}</option>`; });
+                    if (types.length === 1) selType.value = types[0];
+                }
+            }
+        }
+
+        // =============================================
+        // CHART
+        // =============================================
+        function initChart() {
+            const ctx = document.getElementById('defectChart').getContext('2d');
+            defectChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Good', 'Defect'],
+                    datasets: [{ data: [1, 0], backgroundColor: ['#cbd5e1', '#ef4444'], borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '75%',
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+                }
+            });
+        }
+
+        // =============================================
+        // DEFECT LIST
+        // =============================================
+        function addDefectToList() {
+            let area = document.getElementById('sel_area').value;
+            let type = currentCategory === 'WASHING' ? "-" : document.getElementById('sel_type').value;
+            if (!area || !type) { Swal.fire('Perhatian', 'Pilih Area dan Jenis Defect terlebih dahulu.', 'warning'); return; }
+            let key = `${currentCategory}_${area}_${type}`;
+            if (activeDefects[key]) { Swal.fire('Info', 'Defect ini sudah ada di daftar.', 'info'); return; }
+            activeDefects[key] = { cat: currentCategory, area, type, qty: "" };
+            document.getElementById('sel_area').value = "";
+            document.getElementById('sel_type').value = "";
+            renderDefectList();
+            if (window.navigator && window.navigator.vibrate) navigator.vibrate(50);
+        }
+
+        function renderDefectList() {
+            let container = document.getElementById('active_defects_container');
+            let html = ""; let count = 0;
+            for (let key in activeDefects) {
+                count++;
+                let item = activeDefects[key];
+                let typeSubtitle = item.type === "-" ? "" : `<span class="summary-subtitle">&#8627; ${item.type}</span>`;
+                html += `
+                <div class="summary-card" id="card_${key}">
+                    <div class="summary-header">
+                        <div class="summary-title"><span>${item.area}</span>${typeSubtitle}</div>
+                        <button class="btn-del" onclick="removeDefect('${key}')">X</button>
                     </div>
-                </div>
-            </div>`;
-        }
-        if (count === 0) {
-            container.innerHTML = `<div class="empty-state" id="empty_state">BELUM ADA DEFECT YANG DITAMBAHKAN.<br><span style="font-weight:normal; font-size:11px; display:block; margin-top:6px;">Silakan pilih Area &amp; Jenis di atas lalu klik Tambahkan.</span></div>`;
-        } else {
-            container.innerHTML = html;
-        }
-        calculate();
-    }
-
-    function adjVal(key, amount) {
-        let val    = parseInt(activeDefects[key].qty) || 0;
-        let newVal = val + amount;
-        activeDefects[key].qty = newVal > 0 ? newVal : "";
-        document.getElementById(`inp_qty_${key}`).value = newVal > 0 ? newVal : "";
-        if (window.navigator && window.navigator.vibrate) navigator.vibrate(40);
-        calculate();
-    }
-
-    function manualInput(key, value) {
-        let num = parseInt(value.replace(/[^0-9]/g, '')) || 0;
-        activeDefects[key].qty = num > 0 ? num : "";
-        document.getElementById(`inp_qty_${key}`).value = num > 0 ? num : "";
-        calculate();
-    }
-
-    function removeDefect(key) {
-        delete activeDefects[key];
-        renderDefectList();
-    }
-
-    // =============================================
-    // KALKULASI
-    // =============================================
-    function calculate() {
-        let totalDefect = 0;
-        for (let key in activeDefects) totalDefect += parseInt(activeDefects[key].qty) || 0;
-        document.getElementById('tot_def').value = totalDefect;
-
-        const qtyGood = parseInt(document.getElementById('qty_good').value) || 0;
-        const qtyInsp = qtyGood + totalDefect;
-
-        let defPctStr = "0%", goodPctStr = "0%";
-        if (qtyInsp > 0) {
-            defPctStr  = ((totalDefect / qtyInsp) * 100).toFixed(1) + "%";
-            goodPctStr = ((qtyGood / qtyInsp) * 100).toFixed(1) + "%";
-            document.getElementById('qty_insp').value = qtyInsp;
-            document.getElementById('pct_def').value  = defPctStr;
-        } else {
-            document.getElementById('qty_insp').value = 0;
-            document.getElementById('pct_def').value  = "0%";
-        }
-
-        document.getElementById('chart_good').innerText = `${qtyGood} (${goodPctStr})`;
-        document.getElementById('chart_def').innerText  = totalDefect;
-
-        let pctLabel = document.getElementById('chart_pct');
-        if (qtyInsp === 0) {
-            pctLabel.innerText = "0%";
-            pctLabel.style.color = "var(--text-sub)";
-            if (defectChart) {
-                defectChart.data.datasets[0].data = [1, 0];
-                defectChart.data.datasets[0].backgroundColor = ['#cbd5e1', '#ef4444'];
-                defectChart.update();
+                    <div class="flex-inputs">
+                        <div class="stepper" style="width: 100%;">
+                            <button onclick="adjVal('${key}', -1)">-</button>
+                            <input type="number" id="inp_qty_${key}" value="${item.qty}" oninput="manualInput('${key}', this.value)">
+                            <button onclick="adjVal('${key}', 1)">+</button>
+                        </div>
+                    </div>
+                </div>`;
             }
-        } else {
-            pctLabel.innerText = defPctStr;
-            pctLabel.style.color = totalDefect > 0 ? "var(--danger)" : "var(--success)";
-            if (defectChart) {
-                defectChart.data.datasets[0].data = [qtyGood, totalDefect];
-                defectChart.data.datasets[0].backgroundColor = ['#10b981', '#ef4444'];
-                defectChart.update();
+            if (count === 0) {
+                container.innerHTML = `<div class="empty-state" id="empty_state">BELUM ADA DEFECT YANG DITAMBAHKAN.<br><span style="font-weight:normal; font-size:11px; display:block; margin-top:6px;">Silakan pilih Area &amp; Jenis di atas lalu klik Tambahkan.</span></div>`;
+            } else {
+                container.innerHTML = html;
             }
+            calculate();
         }
-        saveData();
-    }
 
-    // =============================================
-    // SAVE / LOAD DATA (LOCAL STORAGE)
-    // =============================================
-    function saveData() {
-        const data = {};
-        document.querySelectorAll('input, textarea, select').forEach(input => {
-            if (input.id &&
-                !input.readOnly &&
-                !input.id.startsWith('inp_') &&
-                !input.id.startsWith('filter_') &&
-                !input.id.startsWith('swal-') &&
-                !input.id.startsWith('gen_') &&
-                !input.id.startsWith('ts_')) {
-                data[input.id] = input.value;
+        function adjVal(key, amount) {
+            let val    = parseInt(activeDefects[key].qty) || 0;
+            let newVal = val + amount;
+            activeDefects[key].qty = newVal > 0 ? newVal : "";
+            document.getElementById(`inp_qty_${key}`).value = newVal > 0 ? newVal : "";
+            if (window.navigator && window.navigator.vibrate) navigator.vibrate(40);
+            calculate();
+        }
+
+        function manualInput(key, value) {
+            let num = parseInt(value.replace(/[^0-9]/g, '')) || 0;
+            activeDefects[key].qty = num > 0 ? num : "";
+            document.getElementById(`inp_qty_${key}`).value = num > 0 ? num : "";
+            calculate();
+        }
+
+        function removeDefect(key) {
+            delete activeDefects[key];
+            renderDefectList();
+        }
+
+        // =============================================
+        // KALKULASI
+        // =============================================
+        function calculate() {
+            let totalDefect = 0;
+            for (let key in activeDefects) totalDefect += parseInt(activeDefects[key].qty) || 0;
+            document.getElementById('tot_def').value = totalDefect;
+
+            const qtyGood = parseInt(document.getElementById('qty_good').value) || 0;
+            const qtyInsp = qtyGood + totalDefect;
+
+            let defPctStr = "0%", goodPctStr = "0%";
+            if (qtyInsp > 0) {
+                defPctStr  = ((totalDefect / qtyInsp) * 100).toFixed(1) + "%";
+                goodPctStr = ((qtyGood / qtyInsp) * 100).toFixed(1) + "%";
+                document.getElementById('qty_insp').value = qtyInsp;
+                document.getElementById('pct_def').value  = defPctStr;
+            } else {
+                document.getElementById('qty_insp').value = 0;
+                document.getElementById('pct_def').value  = "0%";
             }
-        });
-        localStorage.setItem('qcActiveDefects_wash', JSON.stringify(activeDefects));
-        localStorage.setItem('qcAutoSave3_wash', JSON.stringify(data));
-    }
 
-    function loadData() {
-        switchCategory("WASHING");
-        initChart();
-        buildDatabase();
-        populateBuyerSelect();
+            document.getElementById('chart_good').innerText = `${qtyGood} (${goodPctStr})`;
+            document.getElementById('chart_def').innerText  = totalDefect;
 
-        const saved       = localStorage.getItem('qcAutoSave3_wash');
-        const savedDefects = localStorage.getItem('qcActiveDefects_wash');
+            let pctLabel = document.getElementById('chart_pct');
+            if (qtyInsp === 0) {
+                pctLabel.innerText = "0%";
+                pctLabel.style.color = "var(--text-sub)";
+                if (defectChart) {
+                    defectChart.data.datasets[0].data = [1, 0];
+                    defectChart.data.datasets[0].backgroundColor = ['#cbd5e1', '#ef4444'];
+                    defectChart.update();
+                }
+            } else {
+                pctLabel.innerText = defPctStr;
+                pctLabel.style.color = totalDefect > 0 ? "var(--danger)" : "var(--success)";
+                if (defectChart) {
+                    defectChart.data.datasets[0].data = [qtyGood, totalDefect];
+                    defectChart.data.datasets[0].backgroundColor = ['#10b981', '#ef4444'];
+                    defectChart.update();
+                }
+            }
+            saveData();
+        }
 
-        if (savedDefects) { activeDefects = JSON.parse(savedDefects); renderDefectList(); }
-
-        if (saved) {
-            const data = JSON.parse(saved);
-            if (data['buyer']) { document.getElementById('buyer').value = data['buyer']; updateDropdowns('buyer'); }
-            if (data['style']) { document.getElementById('style').value = data['style']; updateDropdowns('style'); }
-            if (data['color']) { document.getElementById('color').value = data['color']; }
+        // =============================================
+        // SAVE / LOAD DATA (LOCAL STORAGE)
+        // =============================================
+        function saveData() {
+            const data = {};
             document.querySelectorAll('input, textarea, select').forEach(input => {
                 if (input.id &&
-                    !['buyer', 'style', 'color'].includes(input.id) &&
                     !input.readOnly &&
                     !input.id.startsWith('inp_') &&
                     !input.id.startsWith('filter_') &&
                     !input.id.startsWith('swal-') &&
                     !input.id.startsWith('gen_') &&
                     !input.id.startsWith('ts_')) {
-                    if (data[input.id] !== undefined) input.value = data[input.id];
+                    data[input.id] = input.value;
                 }
             });
-            calculateShiftHours();
-            calculate();
-        } else {
-            setDefaultDate();
+            localStorage.setItem('qcActiveDefects_wash', JSON.stringify(activeDefects));
+            localStorage.setItem('qcAutoSave3_wash', JSON.stringify(data));
         }
 
-        if (localStorage.getItem('darkMode_wash') === 'true') document.body.classList.add('dark-mode');
+        function loadData() {
+            switchCategory("WASHING");
+            initChart();
+            buildDatabase();
+            populateBuyerSelect();
 
-        if (document.getElementById('buyer').value &&
-            document.getElementById('style').value &&
-            document.getElementById('color').value) {
-            fetchStaticData();
-        }
+            const saved       = localStorage.getItem('qcAutoSave3_wash');
+            const savedDefects = localStorage.getItem('qcActiveDefects_wash');
 
-        checkOfflineBadge();
-    }
+            if (savedDefects) { activeDefects = JSON.parse(savedDefects); renderDefectList(); }
 
-    function resetForm() {
-        Swal.fire({
-            title: 'Hapus Semua Formulir?', text: "Data akan dibersihkan.", icon: 'warning',
-            showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b',
-            confirmButtonText: 'Ya, Bersihkan!'
-        }).then(result => {
-            if (result.isConfirmed) {
-                activeDefects = {};
-                renderDefectList();
-                ['line_name','buyer','style','color','shift_start','shift_end',
-                 'qty_order','deliver','qty_send','qty_receive',
-                 'from_sewing','send_washing','received_washing','qty_good','nama_qc', 'step'].forEach(id => {
-                    let el = document.getElementById(id);
-                    if (el) {
-                        el.value = "";
-                        el.classList.remove('readonly-locked');
-                        if (id !== 'line_name') el.removeAttribute('readonly');
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data['buyer']) { document.getElementById('buyer').value = data['buyer']; updateDropdowns('buyer'); }
+                if (data['style']) { document.getElementById('style').value = data['style']; updateDropdowns('style'); }
+                if (data['color']) { document.getElementById('color').value = data['color']; }
+                document.querySelectorAll('input, textarea, select').forEach(input => {
+                    if (input.id &&
+                        !['buyer', 'style', 'color'].includes(input.id) &&
+                        !input.readOnly &&
+                        !input.id.startsWith('inp_') &&
+                        !input.id.startsWith('filter_') &&
+                        !input.id.startsWith('swal-') &&
+                        !input.id.startsWith('gen_') &&
+                        !input.id.startsWith('ts_')) {
+                        if (data[input.id] !== undefined) input.value = data[input.id];
                     }
                 });
-                document.getElementById('line_name').classList.add('clickable');
-                document.getElementById('line_name').setAttribute('readonly', 'true');
-                document.getElementById('shift_hours').innerText = "";
+                calculateShiftHours();
                 calculate();
-                populateBuyerSelect();
-                updateDropdowns('buyer');
-                saveData();
-                Swal.fire('Bersih!', 'Form sudah di-reset.', 'success');
-            }
-        });
-    }
-
-    window.onload = loadData;
-
-    // =============================================
-    // SUBMIT KE SERVER
-    // =============================================
-    function showSummaryAndSubmit() {
-        const namaQC = document.getElementById('nama_qc').value;
-        const step   = document.getElementById('step').value;
-        const buyer  = document.getElementById('buyer').value;
-        const line   = document.getElementById('line_name').value || "-";
-        const style  = document.getElementById('style').value;
-        const color  = document.getElementById('color').value;
-        const qty_good = parseInt(document.getElementById('qty_good').value) || 0;
-        const t_def    = parseInt(document.getElementById('tot_def').value) || 0;
-        const t_insp   = qty_good + t_def;
-
-        if (!namaQC || line === "-" || !line || !buyer || !style || !color || !step) {
-            Swal.fire('Perhatian', 'Semua kolom Wajib (NAMA QC, STEP PROSES, RUN IN LINE, BUYER, STYLE, COLOR) harus diisi!', 'warning');
-            return;
-        }
-        if (t_insp === 0) {
-            Swal.fire('Data Tidak Valid', 'Total Lulus (Good) atau Defect harus diisi!', 'error');
-            return;
-        }
-
-        Swal.fire({
-            title: 'KONFIRMASI REKAP',
-            html: `<b>QC:</b> ${namaQC}<br><b>Buyer:</b> ${buyer}<br>
-                   <b>Run In Line:</b> ${line} | <b>Style:</b> ${style}<br>
-                   <b>Color:</b> ${color}<br>
-                   <b>Total Inspect:</b> ${t_insp} pcs<br>
-                   <b>Total Defect:</b> <span style="color:red; font-weight:bold;">${t_def}</span> pcs<br>
-                   <b>Total Lulus:</b> <span style="color:green; font-weight:bold;">${qty_good}</span> pcs<br><hr>
-                   Kirim ke Server?`,
-            icon: 'question', showCancelButton: true,
-            confirmButtonColor: '#1e3a8a', cancelButtonColor: '#ef4444',
-            confirmButtonText: 'Ya, Kirim!'
-        }).then(result => {
-            if (result.isConfirmed) executeSendToServer(line);
-        });
-    }
-
-    function checkOfflineBadge() {
-        let queue  = JSON.parse(localStorage.getItem('qcOfflineQueue_wash') || '[]');
-        let btnSync = document.getElementById('btnSync');
-        if (queue.length > 0) { btnSync.style.display = 'flex'; btnSync.innerText = `SINKRON (${queue.length})`; }
-        else { btnSync.style.display = 'none'; }
-    }
-
-    function executeSendToServer(line) {
-        if (SCRIPT_URL.includes("ISI_DENGAN_LINK")) { fallbackOffline(line, {}); return; }
-
-        let btnSub = document.getElementById('btnSubmitMain');
-        btnSub.disabled = true;
-        btnSub.innerHTML = 'MENGIRIM...';
-        document.getElementById('loading').style.display = 'flex';
-        document.getElementById('loading-text').innerText = "SYNC TO CLOUD...";
-
-        let defectsArray = [];
-        for (let key in activeDefects) {
-            let item = activeDefects[key];
-            defectsArray.push({ cat: item.cat, area: item.area, type: item.type, qty: parseInt(item.qty) || 0 });
-        }
-
-        const d = new Date();
-        const currentJam = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-
-        const payload = {
-            action:            "submit",
-            version:           APP_VERSION,
-            nama_qc:           document.getElementById('nama_qc').value,
-            tanggal:           document.getElementById('tanggal').value,
-            jam:               currentJam,
-            line_name:         line,
-            buyer:             document.getElementById('buyer').value  || "-",
-            style:             document.getElementById('style').value  || "-",
-            color:             document.getElementById('color').value  || "-",
-            qty_order:         document.getElementById('qty_order').value || 0,
-            deliver:           document.getElementById('deliver').value || "-",
-            qty_send:          document.getElementById('qty_send').value || 0,
-            qty_receive:       document.getElementById('qty_receive').value || 0,
-            qty_rar:           0,
-            from_sewing:       document.getElementById('from_sewing').value || "-",
-            send_washing:      document.getElementById('send_washing').value || "-",
-            received_washing:  document.getElementById('received_washing').value || "-",
-            shift_start:       document.getElementById('shift_start').value,
-            shift_end:         document.getElementById('shift_end').value,
-            qty_good:          document.getElementById('qty_good').value,
-            qty_insp:          document.getElementById('qty_insp').value,
-            tot_def:           document.getElementById('tot_def').value,
-            pct_def:           document.getElementById('pct_def').value,
-            defects:           defectsArray,
-            step:              document.getElementById('step').value,
-            handfeel:          "",
-            color_eval:        "",
-            result_wash:       ""
-        };
-
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-        })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('loading').style.display = 'none';
-            btnSub.disabled = false;
-            btnSub.innerHTML = 'CONFIRM &amp; SUBMIT';
-            if (data.result === "success") {
-                Swal.fire('Sukses', 'Data Washing berhasil dikirim!', 'success').then(() => clearAfterSubmit());
-            } else if (data.error === "VERSION_MISMATCH") {
-                Swal.fire('Versi Usang!', 'Aplikasi yang Anda gunakan sudah usang. Silakan minta file HTML versi terbaru ke SPV Anda.', 'error');
             } else {
-                Swal.fire('Error', 'Gagal dari server: ' + data.error, 'error');
+                setDefaultDate();
             }
-        })
-        .catch(() => {
-            document.getElementById('loading').style.display = 'none';
-            btnSub.disabled = false;
-            btnSub.innerHTML = 'CONFIRM &amp; SUBMIT';
-            fallbackOffline(line, payload);
-        });
-    }
 
-    function fallbackOffline(line, payload) {
-        let queue = JSON.parse(localStorage.getItem('qcOfflineQueue_wash') || '[]');
-        queue.push({ payload, lineName: line });
-        localStorage.setItem('qcOfflineQueue_wash', JSON.stringify(queue));
-        Swal.fire('Sistem Offline', 'Internet terputus / URL belum diisi. Data tersimpan di HP. Ketuk tombol SINKRON nanti saat tersambung.', 'info');
-        checkOfflineBadge();
-        clearAfterSubmit();
-    }
+            if (localStorage.getItem('darkMode_wash') === 'true') document.body.classList.add('dark-mode');
 
-    function clearAfterSubmit() {
-        activeDefects = {};
-        renderDefectList();
-        ['qty_good', 'qty_send', 'qty_receive'].forEach(id => {
-            let el = document.getElementById(id);
-            if (el) el.value = "";
-        });
-        document.getElementById('step').value = "";
-        calculate();
-        populateBuyerSelect();
-        updateDropdowns('buyer');
-        saveData();
-    }
-
-    function pushOfflineData() {
-        let queue = JSON.parse(localStorage.getItem('qcOfflineQueue_wash') || '[]');
-        if (queue.length === 0) return;
-        document.getElementById('loading').style.display = 'flex';
-        document.getElementById('loading-text').innerText = "MENYINKRONKAN DATA OFFLINE...";
-        let item = queue[0];
-        fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(item.payload),
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-        })
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('loading').style.display = 'none';
-            if (data.result === "success") {
-                queue.shift();
-                localStorage.setItem('qcOfflineQueue_wash', JSON.stringify(queue));
-                Swal.fire('Sukses', `Data Line ${item.lineName} terkirim!`, 'success');
-                checkOfflineBadge();
-                if (queue.length > 0) pushOfflineData();
-            } else if (data.error === "VERSION_MISMATCH") {
-                Swal.fire('Versi Usang!', 'Aplikasi usang. Hapus antrean ini dan gunakan aplikasi terbaru.', 'error');
-            } else {
-                Swal.fire('Gagal', 'Coba lagi nanti.', 'error');
+            if (document.getElementById('buyer').value &&
+                document.getElementById('style').value &&
+                document.getElementById('color').value) {
+                fetchStaticData();
             }
-        })
-        .catch(() => {
-            document.getElementById('loading').style.display = 'none';
-            Swal.fire('Koneksi Buruk', 'Masih belum ada internet.', 'warning');
-        });
-    }
 
-    // =============================================
-    // EXPORT EXCEL
-    // =============================================
-    async function exportToExcel() {
-        const buyer   = document.getElementById('buyer').value   || "";
-        const dateStr = document.getElementById('tanggal').value || "Hari_ini";
-
-        const workbook = new ExcelJS.Workbook();
-        const sheet = workbook.addWorksheet("QC Washing", { views: [{ showGridLines: false }] });
-        sheet.getColumn('A').width = 8;
-        sheet.getColumn('B').width = 15;
-        sheet.getColumn('C').width = 25;
-        sheet.getColumn('D').width = 25;
-        sheet.getColumn('E').width = 12;
-
-        const headers1_13 = [
-            ["ORDER/BUYER",  document.getElementById('buyer').value],
-            ["LINE",         document.getElementById('line_name').value],
-            ["TANGGAL",      dateStr],
-            ["STYLE",        document.getElementById('style').value],
-            ["COLOR",        document.getElementById('color').value],
-            ["QTY ORDER",    document.getElementById('qty_order').value],
-            ["QTY DEFECT",   document.getElementById('tot_def').value],
-            ["QTY GOOD",     document.getElementById('qty_good').value],
-            ["QTY INSPECT",  document.getElementById('qty_insp').value],
-            ["% DEFECT",     document.getElementById('pct_def').value],
-            ["QTY DELIVER",  document.getElementById('deliver').value],
-            ["QTY SEND",     document.getElementById('qty_send').value],
-            ["QTY RECEIVE",  document.getElementById('qty_receive').value]
-        ];
-
-        headers1_13.forEach((row, i) => {
-            sheet.addRow([row[0], "", "", row[1]]);
-            sheet.mergeCells(`A${i + 1}:C${i + 1}`);
-        });
-
-        sheet.addRow(["FIRST OUTPUT DATE", "", "FROM SEWING",      document.getElementById('from_sewing').value]);
-        sheet.addRow(["",                  "", "SEND WASHING",     document.getElementById('send_washing').value]);
-        sheet.addRow(["",                  "", "RECEIVED WASHING", document.getElementById('received_washing').value]);
-        sheet.mergeCells('A14:B16');
-
-        sheet.addRow(["NO", "KATEGORI", "AREA / PROSES", "JENIS DEFECT", "QTY"]);
-
-        let rowIdx = 1, startRow = 18;
-        let lastCat = "", mergeCatStart = startRow;
-        let lastArea = "", mergeAreaStart = startRow;
-
-        for (let key in activeDefects) {
-            let item = activeDefects[key];
-            let outputType = item.type === "-" ? "" : item.type;
-            sheet.addRow([rowIdx++, item.cat, item.area, outputType, item.qty]);
-            let currentRow = startRow + rowIdx - 2;
-            if (item.cat !== lastCat && rowIdx > 2) {
-                if (currentRow - 1 > mergeCatStart) sheet.mergeCells(`B${mergeCatStart}:B${currentRow - 1}`);
-                mergeCatStart = currentRow;
-            }
-            lastCat = item.cat;
-            if (item.area !== lastArea && rowIdx > 2) {
-                if (currentRow - 1 > mergeAreaStart) sheet.mergeCells(`C${mergeAreaStart}:C${currentRow - 1}`);
-                mergeAreaStart = currentRow;
-            }
-            lastArea = item.area;
+            checkOfflineBadge();
         }
 
-        let finalRow = startRow + rowIdx - 2;
-        if (finalRow > mergeCatStart)  sheet.mergeCells(`B${mergeCatStart}:B${finalRow}`);
-        if (finalRow > mergeAreaStart) sheet.mergeCells(`C${mergeAreaStart}:C${finalRow}`);
-
-        const blackFont   = { name: 'Segoe UI', size: 11, color: { argb: 'FF000000' }, bold: true };
-        const borderStyle = {
-            top: { style: 'thin', color: { argb: 'FF000000' } }, left: { style: 'thin', color: { argb: 'FF000000' } },
-            bottom: { style: 'thin', color: { argb: 'FF000000' } }, right: { style: 'thin', color: { argb: 'FF000000' } }
-        };
-        const greyFill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE5E7EB' } };
-        const whiteFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
-
-        sheet.eachRow((row, rowNumber) => {
-            row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-                if (colNumber <= 5) {
-                    cell.font = blackFont;
-                    cell.border = borderStyle;
-                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                    if (rowNumber <= 13) {
-                        if (colNumber <= 3) { cell.fill = greyFill; cell.alignment = { vertical: 'middle', horizontal: 'left' }; }
-                        else if (colNumber === 4) { cell.fill = whiteFill; }
-                    } else if (rowNumber >= 14 && rowNumber <= 16) {
-                        if (colNumber <= 2) { cell.fill = greyFill; cell.alignment = { vertical: 'middle', horizontal: 'center' }; }
-                        else if (colNumber === 3) { cell.fill = greyFill; cell.alignment = { vertical: 'middle', horizontal: 'left' }; }
-                        else if (colNumber === 4) { cell.fill = whiteFill; }
-                    } else if (rowNumber === 17) {
-                        cell.fill = greyFill;
-                    } else {
-                        if (colNumber <= 3) {
-                            cell.fill = greyFill;
-                            if (colNumber > 1) cell.alignment = { vertical: 'middle', horizontal: 'left' };
-                        } else {
-                            cell.fill = whiteFill;
+        function resetForm() {
+            Swal.fire({
+                title: 'Hapus Semua Formulir?', text: "Data akan dibersihkan.", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Bersihkan!'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    activeDefects = {};
+                    renderDefectList();
+                    ['line_name','buyer','style','color','shift_start','shift_end',
+                    'qty_order','deliver','qty_send','qty_receive',
+                    'from_sewing','send_washing','received_washing','qty_good','nama_qc', 'step'].forEach(id => {
+                        let el = document.getElementById(id);
+                        if (el) {
+                            el.value = "";
+                            el.classList.remove('readonly-locked');
+                            if (id !== 'line_name') el.removeAttribute('readonly');
                         }
-                    }
+                    });
+                    document.getElementById('line_name').classList.add('clickable');
+                    document.getElementById('line_name').setAttribute('readonly', 'true');
+                    document.getElementById('shift_hours').innerText = "";
+                    calculate();
+                    populateBuyerSelect();
+                    updateDropdowns('buyer');
+                    saveData();
+                    Swal.fire('Bersih!', 'Form sudah di-reset.', 'success');
                 }
             });
-        });
+        }
 
-        const buffer = await workbook.xlsx.writeBuffer();
-        saveAs(new Blob([buffer]), `QC_Washing_${buyer || 'Offline'}_${dateStr}.xlsx`);
-    }
-</script>
-</body>
-</html>
+        window.onload = loadData;
+
+        // =============================================
+        // SUBMIT KE SERVER
+        // =============================================
+        function showSummaryAndSubmit() {
+            const namaQC = document.getElementById('nama_qc').value;
+            const step   = document.getElementById('step').value;
+            const buyer  = document.getElementById('buyer').value;
+            const line   = document.getElementById('line_name').value || "-";
+            const style  = document.getElementById('style').value;
+            const color  = document.getElementById('color').value;
+            const qty_good = parseInt(document.getElementById('qty_good').value) || 0;
+            const t_def    = parseInt(document.getElementById('tot_def').value) || 0;
+            const t_insp   = qty_good + t_def;
+
+            if (!namaQC || line === "-" || !line || !buyer || !style || !color || !step) {
+                Swal.fire('Perhatian', 'Semua kolom Wajib (NAMA QC, STEP PROSES, RUN IN LINE, BUYER, STYLE, COLOR) harus diisi!', 'warning');
+                return;
+            }
+            if (t_insp === 0) {
+                Swal.fire('Data Tidak Valid', 'Total Lulus (Good) atau Defect harus diisi!', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'KONFIRMASI REKAP',
+                html: `<b>QC:</b> ${namaQC}<br><b>Buyer:</b> ${buyer}<br>
+                    <b>Run In Line:</b> ${line} | <b>Style:</b> ${style}<br>
+                    <b>Color:</b> ${color}<br>
+                    <b>Total Inspect:</b> ${t_insp} pcs<br>
+                    <b>Total Defect:</b> <span style="color:red; font-weight:bold;">${t_def}</span> pcs<br>
+                    <b>Total Lulus:</b> <span style="color:green; font-weight:bold;">${qty_good}</span> pcs<br><hr>
+                    Kirim ke Server?`,
+                icon: 'question', showCancelButton: true,
+                confirmButtonColor: '#1e3a8a', cancelButtonColor: '#ef4444',
+                confirmButtonText: 'Ya, Kirim!'
+            }).then(result => {
+                if (result.isConfirmed) executeSendToServer(line);
+            });
+        }
+
+        function checkOfflineBadge() {
+            let queue  = JSON.parse(localStorage.getItem('qcOfflineQueue_wash') || '[]');
+            let btnSync = document.getElementById('btnSync');
+            if (queue.length > 0) { btnSync.style.display = 'flex'; btnSync.innerText = `SINKRON (${queue.length})`; }
+            else { btnSync.style.display = 'none'; }
+        }
+
+        function executeSendToServer(line) {
+            if (SCRIPT_URL.includes("ISI_DENGAN_LINK")) { fallbackOffline(line, {}); return; }
+
+            let btnSub = document.getElementById('btnSubmitMain');
+            btnSub.disabled = true;
+            btnSub.innerHTML = 'MENGIRIM...';
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "SYNC TO CLOUD...";
+
+            let defectsArray = [];
+            for (let key in activeDefects) {
+                let item = activeDefects[key];
+                defectsArray.push({ cat: item.cat, area: item.area, type: item.type, qty: parseInt(item.qty) || 0 });
+            }
+
+            const d = new Date();
+            const currentJam = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+
+            const payload = {
+                action:            "submit",
+                version:           APP_VERSION,
+                nama_qc:           document.getElementById('nama_qc').value,
+                tanggal:           document.getElementById('tanggal').value,
+                jam:               currentJam,
+                line_name:         line,
+                buyer:             document.getElementById('buyer').value  || "-",
+                style:             document.getElementById('style').value  || "-",
+                color:             document.getElementById('color').value  || "-",
+                qty_order:         document.getElementById('qty_order').value || 0,
+                deliver:           document.getElementById('deliver').value || "-",
+                qty_send:          document.getElementById('qty_send').value || 0,
+                qty_receive:       document.getElementById('qty_receive').value || 0,
+                qty_rar:           0,
+                from_sewing:       document.getElementById('from_sewing').value || "-",
+                send_washing:      document.getElementById('send_washing').value || "-",
+                received_washing:  document.getElementById('received_washing').value || "-",
+                shift_start:       document.getElementById('shift_start').value,
+                shift_end:         document.getElementById('shift_end').value,
+                qty_good:          document.getElementById('qty_good').value,
+                qty_insp:          document.getElementById('qty_insp').value,
+                tot_def:           document.getElementById('tot_def').value,
+                pct_def:           document.getElementById('pct_def').value,
+                defects:           defectsArray,
+                step:              document.getElementById('step').value,
+                handfeel:          "",
+                color_eval:        "",
+                result_wash:       ""
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                btnSub.disabled = false;
+                btnSub.innerHTML = 'CONFIRM &amp; SUBMIT';
+                if (data.result === "success") {
+                    Swal.fire('Sukses', 'Data Washing berhasil dikirim!', 'success').then(() => clearAfterSubmit());
+                } else if (data.error === "VERSION_MISMATCH") {
+                    Swal.fire('Versi Usang!', 'Aplikasi yang Anda gunakan sudah usang. Silakan minta file HTML versi terbaru ke SPV Anda.', 'error');
+                } else {
+                    Swal.fire('Error', 'Gagal dari server: ' + data.error, 'error');
+                }
+            })
+            .catch(() => {
+                document.getElementById('loading').style.display = 'none';
+                btnSub.disabled = false;
+                btnSub.innerHTML = 'CONFIRM &amp; SUBMIT';
+                fallbackOffline(line, payload);
+            });
+        }
+
+        function fallbackOffline(line, payload) {
+            let queue = JSON.parse(localStorage.getItem('qcOfflineQueue_wash') || '[]');
+            queue.push({ payload, lineName: line });
+            localStorage.setItem('qcOfflineQueue_wash', JSON.stringify(queue));
+            Swal.fire('Sistem Offline', 'Internet terputus / URL belum diisi. Data tersimpan di HP. Ketuk tombol SINKRON nanti saat tersambung.', 'info');
+            checkOfflineBadge();
+            clearAfterSubmit();
+        }
+
+        function clearAfterSubmit() {
+            activeDefects = {};
+            renderDefectList();
+            ['qty_good', 'qty_send', 'qty_receive'].forEach(id => {
+                let el = document.getElementById(id);
+                if (el) el.value = "";
+            });
+            document.getElementById('step').value = "";
+            calculate();
+            populateBuyerSelect();
+            updateDropdowns('buyer');
+            saveData();
+        }
+
+        function pushOfflineData() {
+            let queue = JSON.parse(localStorage.getItem('qcOfflineQueue_wash') || '[]');
+            if (queue.length === 0) return;
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "MENYINKRONKAN DATA OFFLINE...";
+            let item = queue[0];
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(item.payload),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                if (data.result === "success") {
+                    queue.shift();
+                    localStorage.setItem('qcOfflineQueue_wash', JSON.stringify(queue));
+                    Swal.fire('Sukses', `Data Line ${item.lineName} terkirim!`, 'success');
+                    checkOfflineBadge();
+                    if (queue.length > 0) pushOfflineData();
+                } else if (data.error === "VERSION_MISMATCH") {
+                    Swal.fire('Versi Usang!', 'Aplikasi usang. Hapus antrean ini dan gunakan aplikasi terbaru.', 'error');
+                } else {
+                    Swal.fire('Gagal', 'Coba lagi nanti.', 'error');
+                }
+            })
+            .catch(() => {
+                document.getElementById('loading').style.display = 'none';
+                Swal.fire('Koneksi Buruk', 'Masih belum ada internet.', 'warning');
+            });
+        }
+
+        // =============================================
+        // EXPORT EXCEL
+        // =============================================
+        async function exportToExcel() {
+            const buyer   = document.getElementById('buyer').value   || "";
+            const dateStr = document.getElementById('tanggal').value || "Hari_ini";
+
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet("QC Washing", { views: [{ showGridLines: false }] });
+            sheet.getColumn('A').width = 8;
+            sheet.getColumn('B').width = 15;
+            sheet.getColumn('C').width = 25;
+            sheet.getColumn('D').width = 25;
+            sheet.getColumn('E').width = 12;
+
+            const headers1_13 = [
+                ["ORDER/BUYER",  document.getElementById('buyer').value],
+                ["LINE",         document.getElementById('line_name').value],
+                ["TANGGAL",      dateStr],
+                ["STYLE",        document.getElementById('style').value],
+                ["COLOR",        document.getElementById('color').value],
+                ["QTY ORDER",    document.getElementById('qty_order').value],
+                ["QTY DEFECT",   document.getElementById('tot_def').value],
+                ["QTY GOOD",     document.getElementById('qty_good').value],
+                ["QTY INSPECT",  document.getElementById('qty_insp').value],
+                ["% DEFECT",     document.getElementById('pct_def').value],
+                ["QTY DELIVER",  document.getElementById('deliver').value],
+                ["QTY SEND",     document.getElementById('qty_send').value],
+                ["QTY RECEIVE",  document.getElementById('qty_receive').value]
+            ];
+
+            headers1_13.forEach((row, i) => {
+                sheet.addRow([row[0], "", "", row[1]]);
+                sheet.mergeCells(`A${i + 1}:C${i + 1}`);
+            });
+
+            sheet.addRow(["FIRST OUTPUT DATE", "", "FROM SEWING",      document.getElementById('from_sewing').value]);
+            sheet.addRow(["",                  "", "SEND WASHING",     document.getElementById('send_washing').value]);
+            sheet.addRow(["",                  "", "RECEIVED WASHING", document.getElementById('received_washing').value]);
+            sheet.mergeCells('A14:B16');
+
+            sheet.addRow(["NO", "KATEGORI", "AREA / PROSES", "JENIS DEFECT", "QTY"]);
+
+            let rowIdx = 1, startRow = 18;
+            let lastCat = "", mergeCatStart = startRow;
+            let lastArea = "", mergeAreaStart = startRow;
+
+            for (let key in activeDefects) {
+                let item = activeDefects[key];
+                let outputType = item.type === "-" ? "" : item.type;
+                sheet.addRow([rowIdx++, item.cat, item.area, outputType, item.qty]);
+                let currentRow = startRow + rowIdx - 2;
+                if (item.cat !== lastCat && rowIdx > 2) {
+                    if (currentRow - 1 > mergeCatStart) sheet.mergeCells(`B${mergeCatStart}:B${currentRow - 1}`);
+                    mergeCatStart = currentRow;
+                }
+                lastCat = item.cat;
+                if (item.area !== lastArea && rowIdx > 2) {
+                    if (currentRow - 1 > mergeAreaStart) sheet.mergeCells(`C${mergeAreaStart}:C${currentRow - 1}`);
+                    mergeAreaStart = currentRow;
+                }
+                lastArea = item.area;
+            }
+
+            let finalRow = startRow + rowIdx - 2;
+            if (finalRow > mergeCatStart)  sheet.mergeCells(`B${mergeCatStart}:B${finalRow}`);
+            if (finalRow > mergeAreaStart) sheet.mergeCells(`C${mergeAreaStart}:C${finalRow}`);
+
+            const blackFont   = { name: 'Segoe UI', size: 11, color: { argb: 'FF000000' }, bold: true };
+            const borderStyle = {
+                top: { style: 'thin', color: { argb: 'FF000000' } }, left: { style: 'thin', color: { argb: 'FF000000' } },
+                bottom: { style: 'thin', color: { argb: 'FF000000' } }, right: { style: 'thin', color: { argb: 'FF000000' } }
+            };
+            const greyFill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE5E7EB' } };
+            const whiteFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+
+            sheet.eachRow((row, rowNumber) => {
+                row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                    if (colNumber <= 5) {
+                        cell.font = blackFont;
+                        cell.border = borderStyle;
+                        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                        if (rowNumber <= 13) {
+                            if (colNumber <= 3) { cell.fill = greyFill; cell.alignment = { vertical: 'middle', horizontal: 'left' }; }
+                            else if (colNumber === 4) { cell.fill = whiteFill; }
+                        } else if (rowNumber >= 14 && rowNumber <= 16) {
+                            if (colNumber <= 2) { cell.fill = greyFill; cell.alignment = { vertical: 'middle', horizontal: 'center' }; }
+                            else if (colNumber === 3) { cell.fill = greyFill; cell.alignment = { vertical: 'middle', horizontal: 'left' }; }
+                            else if (colNumber === 4) { cell.fill = whiteFill; }
+                        } else if (rowNumber === 17) {
+                            cell.fill = greyFill;
+                        } else {
+                            if (colNumber <= 3) {
+                                cell.fill = greyFill;
+                                if (colNumber > 1) cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                            } else {
+                                cell.fill = whiteFill;
+                            }
+                        }
+                    }
+                });
+            });
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            saveAs(new Blob([buffer]), `QC_Washing_${buyer || 'Offline'}_${dateStr}.xlsx`);
+        }
+    </script>
+    </body>
+    </html>
