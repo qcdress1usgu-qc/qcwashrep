@@ -175,13 +175,18 @@
             .btn-add-line { background: var(--bg-input); color: var(--primary); border: 2px solid var(--primary); padding: 14px; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 1;}
             .btn-save-line { background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: 900; cursor: pointer; flex: 2;}
 
-            /* CSS KHUSUS TRACKER */
+            /* CSS KHUSUS TRACKER & TS LIST */
             .tracker-list { max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; border: 1px solid var(--border-line); border-radius: 8px; padding: 8px; background: var(--bg-readonly);}
-            .tracker-item { padding: 12px; background: var(--bg-input); border: 2px solid var(--border-line); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--text-main); display: flex; flex-direction: column; gap: 5px; transition: all 0.2s; }
+            .tracker-item { position: relative; padding: 12px; padding-right: 40px; background: var(--bg-input); border: 2px solid var(--border-line); border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 800; color: var(--text-main); display: flex; flex-direction: column; gap: 5px; transition: all 0.2s; }
             .tracker-item:active { transform: scale(0.98); }
             .tracker-item.selected { background: var(--primary-grad); color: white; border-color: var(--primary); box-shadow: var(--shadow-md); }
+            .tracker-item.done { border-color: var(--success); background: #f0fdf4; color: var(--text-main); } /* Warna khusus kalau sudah disubmit */
+            
             .tracker-badge { font-size: 10px; background: var(--accent); color: var(--text-brand); padding: 3px 8px; border-radius: 4px; display: inline-block; width: max-content; font-weight: 900;}
             .tracker-item.selected .tracker-badge { background: white; color: var(--primary); }
+            
+            .badge-done { display: none; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 18px; }
+            .tracker-item.done .badge-done { display: block; }
 
             @media (min-width: 600px) { .grid-half { grid-template-columns: 1fr 1fr; } }
         </style>
@@ -276,17 +281,6 @@
                 <div class="input-group">
                     <label>DELIVER:</label>
                     <input type="date" id="deliver" onchange="saveData()">
-                </div>
-            </div>
-
-            <div class="grid-half" style="margin-top: 14px;">
-                <div class="input-group">
-                    <label>QTY SEND:</label>
-                    <input type="number" id="qty_send" oninput="formatAntiMinus(this); saveData()">
-                </div>
-                <div class="input-group">
-                    <label>QTY RECEIVE:</label>
-                    <input type="number" id="qty_receive" oninput="formatAntiMinus(this); saveData()">
                 </div>
             </div>
 
@@ -405,7 +399,7 @@
     <div id="actionSheet" class="sheet-overlay" onclick="closeActionSheet(event)">
         <div class="bottom-sheet" onclick="event.stopPropagation()">
             <div class="sheet-handle"></div>
-            <button class="sheet-btn" style="color: var(--primary);" onclick="openTutupShiftModal()">TUTUP SHIFT &amp; EVALUASI (SPV)</button>
+            <button class="sheet-btn" style="color: var(--primary);" onclick="openTutupShiftModal()">EVALUASI &amp; TUTUP SHIFT (SPV)</button>
             <button class="sheet-btn" style="color: var(--success);" onclick="openGenBuyerModal()">GENERATE SUMMARY BUYER (SPV)</button>
             <button class="sheet-btn" onclick="runAction(resetForm)">RESET FORMULIR</button>
             <button class="sheet-btn" onclick="runAction(exportToExcel)">DOWNLOAD EXCEL</button>
@@ -414,7 +408,7 @@
 
     <div id="tutupShiftModal" class="modal-overlay" onclick="closeTutupShiftModal(event)">
         <div class="modal-box" onclick="event.stopPropagation()">
-            <div class="modal-title" style="color: var(--primary);">TUTUP SHIFT &amp; EVALUASI</div>
+            <div class="modal-title" style="color: var(--primary);">EVALUASI &amp; TUTUP SHIFT</div>
             
             <div id="ts_step1">
                 <div class="input-group">
@@ -428,23 +422,45 @@
             </div>
 
             <div id="ts_step2" style="display:none;">
-                <div class="grid-half">
-                    <div class="input-group">
-                        <label>HANDFEEL:</label>
-                        <input type="text" id="ts_handfeel">
-                    </div>
-                    <div class="input-group">
-                        <label>COLOR EVALUATION:</label>
-                        <input type="text" id="ts_color">
-                    </div>
+                <div id="ts_list_view">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-sub); margin-bottom: 6px; display: block;" class="req">PILIH DATA HARI INI (YANG AKAN DIEVALUASI):</label>
+                    <div class="tracker-list" id="ts_item_list">
+                        </div>
+                    <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger); width: 100%; margin-top: 10px;" onclick="finalizeTutupShift()">TUTUP SHIFT &amp; BUAT REKAP BARU</button>
                 </div>
-                <div class="input-group" style="margin-top: 10px;">
-                    <label>RESULT WASHING:</label>
-                    <input type="text" id="ts_result">
-                </div>
-                <div class="grid-half" style="margin-top: 15px;">
-                    <button class="btn-save-line" style="background:var(--danger); border-color:var(--danger);" onclick="closeTutupShiftModal()">BATAL</button>
-                    <button class="btn-save-line" style="background:var(--primary); border-color:var(--primary);" onclick="executeRecapSPV()">TUTUP SHIFT</button>
+
+                <div id="ts_form_view" style="display:none;">
+                    <div style="font-weight:900; color:var(--primary); margin-bottom:12px; border-bottom: 2px solid var(--border-line); padding-bottom: 8px; text-align: center; font-size: 15px;" id="ts_selected_label"></div>
+                    
+                    <div class="grid-half">
+                        <div class="input-group">
+                            <label>QTY SEND:</label>
+                            <input type="number" id="ts_qty_send" oninput="formatAntiMinus(this)">
+                        </div>
+                        <div class="input-group">
+                            <label>QTY RECEIVE:</label>
+                            <input type="number" id="ts_qty_receive" oninput="formatAntiMinus(this)">
+                        </div>
+                    </div>
+
+                    <div class="grid-half" style="margin-top: 10px;">
+                        <div class="input-group">
+                            <label>HANDFEEL:</label>
+                            <input type="text" id="ts_handfeel">
+                        </div>
+                        <div class="input-group">
+                            <label>COLOR EVALUATION:</label>
+                            <input type="text" id="ts_color">
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-top: 10px;">
+                        <label>RESULT WASHING:</label>
+                        <input type="text" id="ts_result">
+                    </div>
+                    <div class="grid-half" style="margin-top: 15px;">
+                        <button class="btn-save-line" style="background:var(--text-sub); border-color:var(--text-sub);" onclick="backToTSList()">KEMBALI</button>
+                        <button class="btn-save-line" style="background:var(--primary); border-color:var(--primary);" onclick="executeRecapSPV()">SIMPAN DATA</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -471,7 +487,7 @@
                     </div>
 
                 <div class="input-group">
-                    <label class="req">2. NAMA SUPPLIER:</label>
+                    <label class="req">2. NAMA SUPPLIER :</label>
                     <input type="text" id="gen_supplier">
                 </div>
 
@@ -533,8 +549,12 @@
         }
 
         // =============================================
-        // MODAL TUTUP SHIFT
+        // MODAL EVALUASI & TUTUP SHIFT (DIUBAH)
         // =============================================
+        let selectedTSData = null;
+        let completedTSItems = []; // Untuk simpan state centang sementara modal terbuka
+        let totalTSItems = 0; // Total baris item hari itu
+
         function openTutupShiftModal() {
             closeActionSheet();
             setTimeout(() => {
@@ -542,6 +562,11 @@
                 document.getElementById('ts_step1').style.display = 'block';
                 document.getElementById('ts_step2').style.display = 'none';
                 document.getElementById('ts_pass').value = '';
+                
+                selectedTSData = null;
+                completedTSItems = []; // Reset state tiap kali modal ini dibuka ulang dari awal
+                totalTSItems = 0;
+                
                 modal.style.display = 'flex';
                 setTimeout(() => modal.classList.add('show'), 10);
             }, 300);
@@ -552,82 +577,239 @@
             const modal = document.getElementById('tutupShiftModal');
             modal.classList.remove('show');
             setTimeout(() => modal.style.display = 'none', 300);
-            ['ts_pass', 'ts_handfeel', 'ts_color', 'ts_result'].forEach(id => {
-                document.getElementById(id).value = "";
+            
+            ['ts_pass', 'ts_qty_send', 'ts_qty_receive', 'ts_handfeel', 'ts_color', 'ts_result'].forEach(id => {
+                if(document.getElementById(id)) document.getElementById(id).value = "";
             });
+            
+            // Kembalikan view ke list untuk antisipasi buka ulang
+            document.getElementById('ts_list_view').style.display = 'block';
+            document.getElementById('ts_form_view').style.display = 'none';
+            selectedTSData = null;
         }
 
         function verifyTSPass() {
             const pass = document.getElementById('ts_pass').value;
             if (pass === 'WASHD1') {
                 document.getElementById('ts_step1').style.display = 'none';
-                document.getElementById('ts_step2').style.display = 'block';
+                fetchTodayData(); // Mengambil data tracker yang masuk hari ini
             } else {
                 Swal.fire('Akses Ditolak', 'Password SPV Salah!', 'error');
             }
         }
 
-        function executeRecapSPV() {
-            const handfeel    = document.getElementById('ts_handfeel').value.trim();
-            const color_eval  = document.getElementById('ts_color').value.trim();
-            const result_wash = document.getElementById('ts_result').value.trim();
-            const tanggal     = document.getElementById('tanggal').value;
-
-            const reqDay = tanggal ? tanggal.split('-')[2] : "";
-
+        function fetchTodayData() {
+            const tanggal = document.getElementById('tanggal').value;
             document.getElementById('loading').style.display = 'flex';
-            document.getElementById('loading-text').innerText = "MENUTUP SHIFT...";
+            document.getElementById('loading-text').innerText = "MEMUAT DATA HARI INI...";
 
-            const payload = {
-                action:      "recap",
-                password:    "WASHD1",
-                fullDate:    tanggal,
-                reqDay:      reqDay,
-                handfeel:    handfeel,
-                color_eval:  color_eval,
-                result_wash: result_wash
-            };
-
-            // TIMEOUT 60 DETIK
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 60000);
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
 
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify(payload),
+                body: JSON.stringify({ action: "get_today_data", password: "WASHD1", tanggal: tanggal }),
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 signal: controller.signal
             })
             .then(res => {
                 clearTimeout(timeoutId);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 return res.text();
             })
             .then(text => {
                 document.getElementById('loading').style.display = 'none';
                 try {
                     const data = JSON.parse(text);
-                    closeTutupShiftModal();
-                    if (data.result === "success") {
-                        Swal.fire('✅ Sukses', 'Shift berhasil ditutup! Dashboard baru sudah disiapkan.', 'success');
+                    if (data.result === "success" && data.data_hari_ini && data.data_hari_ini.length > 0) {
+                        renderTSList(data.data_hari_ini);
                     } else {
-                        Swal.fire('❌ Gagal', data.error || 'Terjadi kesalahan di server.', 'error');
+                        renderTSList([]); // Menampilkan format list kosong (Tidak ada data)
                     }
-                } catch (e) {
-                    closeTutupShiftModal();
-                    Swal.fire('⏱️ Timeout', 'Server merespons terlalu lama. Coba lagi atau refresh halaman.', 'error');
+                } catch(e) {
+                    renderTSList([]);
+                    Swal.fire('Error', 'Gagal membaca data dari server.', 'error');
                 }
             })
-            .catch((error) => {
+            .catch(err => {
                 clearTimeout(timeoutId);
                 document.getElementById('loading').style.display = 'none';
-                if (error.name === 'AbortError') {
-                    Swal.fire('⏱️ Timeout', 'Proses lebih dari 60 detik. Cek Apps Script deployment.', 'error');
-                } else {
-                    Swal.fire('❌ Koneksi Gagal', 'Error: ' + error.message, 'error');
+                renderTSList([]);
+                Swal.fire('Error Koneksi', 'Gagal terhubung ke server.', 'error');
+            });
+        }
+
+        function renderTSList(items) {
+            document.getElementById('ts_step2').style.display = 'block';
+            document.getElementById('ts_list_view').style.display = 'block';
+            document.getElementById('ts_form_view').style.display = 'none';
+            
+            const list = document.getElementById('ts_item_list');
+            selectedTSData = null;
+
+            if (!items || items.length === 0) {
+                totalTSItems = 0;
+                list.innerHTML = `<div class="empty-state">TIDAK ADA DATA HARI INI DI DATABASE.</div>`;
+                return;
+            }
+
+            totalTSItems = items.length;
+            list.innerHTML = items.map((item, index) => {
+                let isDoneClass = completedTSItems.includes(index) ? 'done' : '';
+                return `
+                <div class="tracker-item ${isDoneClass}" id="ts_item_${index}" onclick="selectTSItem(${index}, '${item.buyer}', '${item.style}', '${item.color}')">
+                    <div style="display:flex; flex-direction:column; gap:5px;">
+                        <span class="tracker-badge">${item.buyer}</span>
+                        <span>${item.style} - ${item.color}</span>
+                    </div>
+                    <span class="badge-done">✅</span>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function selectTSItem(index, buyer, style, color) {
+            selectedTSData = { index, buyer, style, color };
+            
+            // Set label yang sedang dikerjakan
+            document.getElementById('ts_selected_label').innerText = `${buyer} | ${style} - ${color}`;
+            
+            // Kosongkan inputan form
+            ['ts_qty_send', 'ts_qty_receive', 'ts_handfeel', 'ts_color', 'ts_result'].forEach(id => {
+                document.getElementById(id).value = "";
+            });
+            
+            // Sembunyikan list, munculkan form
+            document.getElementById('ts_list_view').style.display = 'none';
+            document.getElementById('ts_form_view').style.display = 'block';
+        }
+
+        function backToTSList() {
+            // Kembali ke daftar pilihan tanpa menutup modal password
+            document.getElementById('ts_list_view').style.display = 'block';
+            document.getElementById('ts_form_view').style.display = 'none';
+            selectedTSData = null;
+        }
+
+        function executeRecapSPV() {
+            if (!selectedTSData) return;
+
+            const qty_send    = document.getElementById('ts_qty_send').value;
+            const qty_receive = document.getElementById('ts_qty_receive').value;
+            const handfeel    = document.getElementById('ts_handfeel').value.trim();
+            const color_eval  = document.getElementById('ts_color').value.trim();
+            const result_wash = document.getElementById('ts_result').value.trim();
+            const tanggal     = document.getElementById('tanggal').value;
+
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "MENYIMPAN EVALUASI...";
+
+            const payload = {
+                action:      "recap",
+                password:    "WASHD1",
+                tanggal:     tanggal,
+                buyer:       selectedTSData.buyer,
+                style:       selectedTSData.style,
+                color:       selectedTSData.color,
+                qty_send:    qty_send,
+                qty_receive: qty_receive,
+                handfeel:    handfeel,
+                color_eval:  color_eval,
+                result_wash: result_wash
+            };
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .finally(() => {
+                document.getElementById('loading').style.display = 'none';
+                
+                // Tambahkan index ke array completed agar dapat centang hijau
+                if (!completedTSItems.includes(selectedTSData.index)) {
+                    completedTSItems.push(selectedTSData.index);
+                }
+
+                // Update UI list untuk menampilkan centang
+                let itemEl = document.getElementById(`ts_item_${selectedTSData.index}`);
+                if(itemEl) {
+                    itemEl.classList.add('done');
+                }
+
+                // Munculkan notif sukses sebentar
+                Swal.fire({
+                    title: '✅ TERSIMPAN',
+                    text: 'Data evaluasi berhasil disimpan!',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+                // Otomatis kembali ke menu list
+                backToTSList();
+            });
+        }
+
+        // =============================================
+        // FUNGSI UNTUK FINALISASI (MENUTUP SHIFT & CETAK SHEET BARU)
+        // =============================================
+        function finalizeTutupShift() {
+            // Kalau hari ini sama sekali belum ada produksi, langsung tutup modalnya saja
+            if (totalTSItems === 0) {
+                closeTutupShiftModal();
+                return;
+            }
+
+            // Kalau belum dicentang semua, munculkan peringatan
+            if (completedTSItems.length < totalTSItems) {
+                Swal.fire('Belum Selesai!', 'Pastikan semua item di atas sudah diklik dan disave (tercentang hijau) sebelum menutup shift.', 'warning');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Tutup Shift?',
+                text: 'Semua data sudah dievaluasi. Tindakan ini akan mencetak lembar Dashboard baru untuk shift berikutnya.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Tutup Shift!',
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#ef4444'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    document.getElementById('loading').style.display = 'flex';
+                    document.getElementById('loading-text').innerText = "MEMBUAT DASHBOARD BARU...";
+
+                    const tanggal = document.getElementById('tanggal').value;
+                    const reqDay = tanggal ? tanggal.split('-')[2] : "";
+
+                    fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ 
+                            action: "finalize_shift", 
+                            password: "WASHD1", 
+                            tanggal: tanggal,
+                            reqDay: reqDay 
+                        }),
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('loading').style.display = 'none';
+                        if (data.result === 'success') {
+                            Swal.fire('Sukses', 'Shift berhasil ditutup dan Dashboard baru telah disiapkan!', 'success');
+                            closeTutupShiftModal();
+                        } else {
+                            Swal.fire('Error', data.error || 'Terjadi kesalahan saat membuat Dashboard baru.', 'error');
+                        }
+                    })
+                    .catch(() => {
+                        document.getElementById('loading').style.display = 'none';
+                        Swal.fire('Error', 'Koneksi terputus saat membuat Dashboard baru.', 'error');
+                    });
                 }
             });
         }
+
 
         // =============================================
         // MODAL GENERATE SUMMARY BUYER & TRACKER
@@ -696,34 +878,22 @@
                 document.getElementById('loading').style.display = 'none';
                 try {
                     const data = JSON.parse(text);
-                    if (data.result === "success" && data.tracker_data) {
+                    if (data.result === "success" && data.tracker_data && data.tracker_data.length > 0) {
                         renderTrackerList(data.tracker_data);
                     } else {
-                        console.log("Gagal ambil data tracker, gunakan fallback");
-                        renderDummyTracker();
+                        renderTrackerList([]);
                     }
                 } catch (e) {
-                    console.log("Response bukan JSON, gunakan fallback");
-                    renderDummyTracker();
+                    renderTrackerList([]);
+                    Swal.fire('Error', 'Gagal membaca data dari server.', 'error');
                 }
             })
             .catch((error) => {
                 clearTimeout(timeoutId);
                 document.getElementById('loading').style.display = 'none';
-                console.log("Koneksi gagal atau timeout, gunakan fallback: " + error.message);
-                renderDummyTracker();
+                renderTrackerList([]);
+                Swal.fire('Error Koneksi', 'Gagal terhubung ke server: ' + error.message, 'error');
             });
-        }
-
-        function renderDummyTracker() {
-            // Data bohongan supaya UI tetap bisa diklik-klik jika server belum disetting
-            const dummy = [
-                { buyer: 'CK NA', style: '44C148G', color: 'Billowing Sail' },
-                { buyer: 'TH EU', style: 'XM0XM04862', color: 'Provence' },
-                { buyer: 'PERRY ELLIS', style: '4KFW7005', color: 'Ashleigh Blue' },
-                { buyer: 'VICTORIA\'S SECRET', style: '10241546', color: 'Coconut White' }
-            ];
-            renderTrackerList(dummy);
         }
 
         function renderTrackerList(items) {
@@ -1578,7 +1748,7 @@
                     activeDefects = {};
                     renderDefectList();
                     ['line_name','buyer','style','color','shift_start','shift_end',
-                    'qty_order','deliver','qty_send','qty_receive',
+                    'qty_order','deliver',
                     'from_sewing','send_washing','received_washing','qty_good','nama_qc', 'step'].forEach(id => {
                         let el = document.getElementById(id);
                         if (el) {
@@ -1678,8 +1848,8 @@
                 color:             document.getElementById('color').value  || "-",
                 qty_order:         document.getElementById('qty_order').value || 0,
                 deliver:           document.getElementById('deliver').value || "-",
-                qty_send:          document.getElementById('qty_send').value || 0,
-                qty_receive:       document.getElementById('qty_receive').value || 0,
+                qty_send:          0, // Di-nol-kan karena diisi SPV nanti
+                qty_receive:       0, // Di-nol-kan karena diisi SPV nanti
                 qty_rar:           0,
                 from_sewing:       document.getElementById('from_sewing').value || "-",
                 send_washing:      document.getElementById('send_washing').value || "-",
@@ -1735,7 +1905,7 @@
         function clearAfterSubmit() {
             activeDefects = {};
             renderDefectList();
-            ['qty_good', 'qty_send', 'qty_receive'].forEach(id => {
+            ['qty_good'].forEach(id => {
                 let el = document.getElementById(id);
                 if (el) el.value = "";
             });
@@ -1805,8 +1975,8 @@
                 ["QTY INSPECT",  document.getElementById('qty_insp').value],
                 ["% DEFECT",     document.getElementById('pct_def').value],
                 ["QTY DELIVER",  document.getElementById('deliver').value],
-                ["QTY SEND",     document.getElementById('qty_send').value],
-                ["QTY RECEIVE",  document.getElementById('qty_receive').value]
+                ["QTY SEND",     "Diisi oleh SPV"],
+                ["QTY RECEIVE",  "Diisi oleh SPV"]
             ];
 
             headers1_13.forEach((row, i) => {
