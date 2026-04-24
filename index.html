@@ -1343,16 +1343,21 @@
             let buyer = document.getElementById('buyer').value;
             let style = document.getElementById('style').value;
             let color = document.getElementById('color').value;
-            let fields = ['qty_order', 'line_name', 'deliver', 'from_sewing', 'send_washing', 'received_washing'];
+            
+            // line_name dipisah dari list ini agar tidak ikut terkunci
+            let lockFields = ['qty_order', 'deliver', 'from_sewing', 'send_washing', 'received_washing'];
 
             if (!buyer || !style || !color) {
-                fields.forEach(id => {
+                lockFields.forEach(id => {
                     let el = document.getElementById(id);
                     el.classList.remove('readonly-locked');
-                    if (id !== 'line_name') el.removeAttribute('readonly');
+                    el.removeAttribute('readonly');
                 });
-                document.getElementById('line_name').classList.add('clickable');
-                document.getElementById('line_name').setAttribute('readonly', 'true');
+                // Pastikan line_name selalu bisa diklik
+                let lineEl = document.getElementById('line_name');
+                lineEl.classList.remove('readonly-locked');
+                lineEl.classList.add('clickable');
+                lineEl.setAttribute('readonly', 'true');
                 return;
             }
 
@@ -1368,25 +1373,36 @@
                 document.getElementById('loading').style.display = 'none';
                 if (data.result === "success") {
                     document.getElementById('qty_order').value      = data.qty_order;
-                    document.getElementById('line_name').value      = data.line_name;
+                    document.getElementById('line_name').value      = data.line_name; // Tetap ditarik datanya
                     document.getElementById('deliver').value        = data.deliver;
                     document.getElementById('from_sewing').value    = data.from_sewing;
                     document.getElementById('send_washing').value   = data.send_washing;
                     document.getElementById('received_washing').value = data.received_washing;
-                    fields.forEach(id => {
+                    
+                    // Lock field selain line_name
+                    lockFields.forEach(id => {
                         let el = document.getElementById(id);
                         el.classList.add('readonly-locked');
                         el.setAttribute('readonly', 'true');
-                        el.classList.remove('clickable');
                     });
+
+                    // Khusus line_name, pastikan tetap hidup/bisa diklik
+                    let lineEl = document.getElementById('line_name');
+                    lineEl.classList.remove('readonly-locked');
+                    lineEl.classList.add('clickable');
+                    lineEl.setAttribute('readonly', 'true');
+
                 } else {
-                    fields.forEach(id => {
+                    lockFields.forEach(id => {
                         let el = document.getElementById(id);
                         el.classList.remove('readonly-locked');
-                        if (id !== 'line_name') el.removeAttribute('readonly');
+                        el.removeAttribute('readonly');
                     });
-                    document.getElementById('line_name').classList.add('clickable');
-                    document.getElementById('line_name').setAttribute('readonly', 'true');
+                    
+                    let lineEl = document.getElementById('line_name');
+                    lineEl.classList.remove('readonly-locked');
+                    lineEl.classList.add('clickable');
+                    lineEl.setAttribute('readonly', 'true');
                 }
                 saveData();
             })
